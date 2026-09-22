@@ -1,29 +1,22 @@
-# Cinema Control v0.4.2
+# Cinema Control v0.6.0
 
-Diagnose-/Bereinigungsbuild auf Basis von v0.4.1.
+GitHub-Pages/iPad Build für den Marantz NR1605.
 
-## HAR-Auswertung
-Die GitHub-Pages-Dateien selbst wurden sauber mit HTTP 200 geladen.
+## Neu in v0.6.0
 
-Die auffälligen `Status 0`-Einträge entstanden bei lokalen Requests an den Marantz.
-Die App nutzt für direkte Receiver-Kommandos `fetch(..., mode: "no-cors")`.
-Solche Antworten sind für JavaScript absichtlich *opaque*: Status, Header und Body
-sind nicht lesbar. Browser stellen den Status deshalb als `0` dar, auch wenn der
-Receiver den Befehl tatsächlich ausführt.
-
-## Änderung in v0.4.2
-- sichtbare Versionsnummer bleibt erhalten
-- alte Mehrfach-Probes gegen
-  - MainZoneXmlStatus.xml
-  - MainZoneXmlStatusLite.xml
-  - Receiver-Root
-  wurden entfernt
-- „Verbindungsinfo“ erzeugt jetzt keinen Netzwerkverkehr
-- Funktionstest erfolgt nur noch bewusst über die vorhandenen Lautstärke-/Power-Tasten
-- Texte unterscheiden nun zwischen „Befehl ausgelöst“ und „Antwort bestätigt“
-- Cache-Busting auf v0.4.2
+- Quellenbelegung an den echten NR1605 angepasst: XBOX = umbenannter Blu-ray Eingang (`SIBD`).
+- Tone Control, Bass, Treble.
+- Dialog Level und separater Subwoofer Level.
+- Cinema EQ, M-DAX/Restorer, DRC und Audio Delay.
+- Picture Mode, HDMI Audio Out und Video Select.
+- Frontdisplay-Dimmer, Sleep Timer, ECO und Auto Standby.
+- Smart Select 1-4: Abrufen und bewusstes Speichern.
+- Zone 2: Power, Mute, Quelle, Lautstärke, L/R-Pegel, Bass und Treble.
+- Sitzungsweites Befehlsprotokoll in der Oberfläche.
+- Weiterhin sichtbare Versionsnummer.
 
 ## Wichtig
-Bei echten no-cors-Kommandos kann ein HAR weiterhin `Status 0` anzeigen.
-Das ist bei diesem Direktsteuerungsmodell technisch normal und kein belastbarer
-Hinweis darauf, dass der Befehl fehlgeschlagen ist.
+
+Die Web-App sendet die Befehle direkt im lokalen LAN an den Receiver. Wegen Browser-CORS kann die GitHub-Pages-Version Antworten des Receivers nicht zuverlässig lesen. Daher zeigt v0.6.0 keine erfundenen Live-Rückmeldungen an. Das bidirektionale TCP-Lesen über Port 23 wurde am NR1605 separat erfolgreich getestet und ist für eine spätere native iPad-Bridge vorgesehen.
+
+Receiver: Netzwerk -> IP Control -> Always On.

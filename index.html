@@ -8,10 +8,10 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Cinema Control">
   <title>Cinema Control</title>
-  <link rel="manifest" href="manifest.webmanifest?v=0.4.2">
-  <link rel="icon" href="icon.svg?v=0.4.2" type="image/svg+xml">
-  <link rel="apple-touch-icon" href="icon-192.png?v=0.4.2">
-  <link rel="stylesheet" href="styles.css?v=0.4.2">
+  <link rel="manifest" href="manifest.webmanifest?v=0.6.0">
+  <link rel="icon" href="icon.svg?v=0.6.0" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon-192.png?v=0.6.0">
+  <link rel="stylesheet" href="styles.css?v=0.6.0">
 </head>
 <body>
   <div class="ambient ambient-a"></div>
@@ -24,17 +24,14 @@
           <h1>Cinema Control</h1>
           <div class="status-pill"><span class="status-dot"></span><span id="statusText">Verbunden</span></div>
         </div>
-        <div class="subtitle" id="subtitle">Denon AVR-X4000 · Wohnzimmer</div>
+        <div class="subtitle" id="subtitle">Marantz NR1605 · Wohnzimmer</div>
       </div>
 
       <div class="top-actions">
         <div class="version-badge" id="versionBadge" title="Build 2026-09-22">
           <span class="version-dot"></span>
-          <span id="versionText">v0.4.2</span>
+          <span id="versionText">v0.6.0</span>
         </div>
-        <button class="top-icon" aria-label="Suche">
-          <svg viewBox="0 0 24 24"><path d="M10.8 4.6a6.2 6.2 0 1 0 0 12.4 6.2 6.2 0 0 0 0-12.4Zm0-2a8.2 8.2 0 1 1 0 16.4 8.2 8.2 0 0 1 0-16.4Zm6.2 13.7 4.3 4.3-1.4 1.4-4.3-4.3 1.4-1.4Z"/></svg>
-        </button>
         <button class="top-chip" id="sceneBtn">
           <svg viewBox="0 0 24 24"><path d="M4 5h16v14H4V5Zm2 2v10h12V7H6Zm2-5 2 3h2l-2-3H8Zm5 0 2 3h2l-2-3h-2Z"/></svg>
           Szenen
@@ -46,7 +43,7 @@
     </header>
 
     <main class="dashboard">
-      <section class="hero-card glass-panel">
+      <section class="hero-card glass-panel" id="receiverSection">
         <div class="hero-left">
           <div class="power-line">
             <button class="power-button active" id="powerBtn">
@@ -91,10 +88,9 @@
         </div>
       </section>
 
-      <section class="scene-area">
+      <section class="scene-area" id="scenesSection">
         <div class="section-head compact">
           <h2>Schnellszenen</h2>
-          <button class="link-btn">Alle anzeigen ›</button>
         </div>
         <div class="scene-row">
           <button class="scene-card film" data-scene="film">
@@ -120,7 +116,7 @@
         </div>
       </section>
 
-      <section class="sources glass-panel">
+      <section class="sources glass-panel" id="sourcesSection">
         <div class="section-head"><h2>Quellen</h2></div>
         <div class="source-grid" id="sourceGrid"></div>
       </section>
@@ -130,22 +126,33 @@
         <div class="mode-grid" id="modeGrid"></div>
       </section>
 
-      <section class="audio-settings glass-panel">
-        <div class="section-head"><h2>Audio-Einstellungen</h2></div>
+      <section class="audio-settings glass-panel" id="audioSection">
+        <div class="section-head">
+          <div>
+            <h2>Audio-Einstellungen</h2>
+            <div class="section-sub" id="audioAvailabilityText">Dokumentierte NR1605-Steuerung</div>
+          </div>
+          <div class="verified-chip">✓ Protokoll geprüft</div>
+        </div>
 
         <div class="setting-list">
-          <div class="setting-row">
+          <div class="choice-row" data-audyssey-control>
             <div class="setting-icon">
               <svg viewBox="0 0 24 24"><path d="M4 9h2v6H4V9Zm4-4h2v14H8V5Zm4 7h2v7h-2v-7Zm4-10h2v17h-2V2Zm4 5h2v12h-2V7Z"/></svg>
             </div>
             <div class="setting-copy">
-              <div class="setting-name" id="audysseyTitle">Audyssey XT32</div>
-              <div class="setting-desc">Raumkorrektur</div>
+              <div class="setting-name">Audyssey MultEQ</div>
+              <div class="setting-desc">Reference, L/R Bypass, Flat oder Aus</div>
             </div>
-            <label class="ios-switch"><input type="checkbox" id="audysseyToggle"><span></span></label>
+            <select id="multEqSelect" class="compact-select">
+              <option value="AUDYSSEY">Reference</option>
+              <option value="BYP.LR">L/R Bypass</option>
+              <option value="FLAT">Flat</option>
+              <option value="OFF">Aus</option>
+            </select>
           </div>
 
-          <div class="setting-row">
+          <div class="setting-row" data-audyssey-control>
             <div class="setting-icon">
               <svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2Zm4 5h2V6H7v12Zm4-2h2V8h-2v8Zm4 5h2V3h-2v18Zm4-9h2v-2h-2v2Z"/></svg>
             </div>
@@ -156,15 +163,34 @@
             <label class="ios-switch"><input type="checkbox" id="dynEqToggle"><span></span></label>
           </div>
 
-          <div class="setting-row">
+          <div class="choice-row" data-dyneq-control>
+            <div class="setting-icon">↔</div>
+            <div class="setting-copy">
+              <div class="setting-name">Referenzpegel-Offset</div>
+              <div class="setting-desc">0 / 5 / 10 / 15 dB</div>
+            </div>
+            <select id="refLevelSelect" class="compact-select">
+              <option value="0">0 dB</option>
+              <option value="5">5 dB</option>
+              <option value="10">10 dB</option>
+              <option value="15">15 dB</option>
+            </select>
+          </div>
+
+          <div class="choice-row" data-audyssey-control>
             <div class="setting-icon">
               <svg viewBox="0 0 24 24"><path d="M3 12h3l2-4 4 8 3-6 2 2h4v2h-5l-1-1-3 6-4-8-1 3H3v-2Z"/></svg>
             </div>
             <div class="setting-copy">
               <div class="setting-name">Dynamic Volume</div>
-              <div class="setting-desc">Lautstärkeunterschiede ausgleichen</div>
+              <div class="setting-desc">Aus / Light / Medium / Heavy</div>
             </div>
-            <label class="ios-switch"><input type="checkbox" id="dynVolToggle"><span></span></label>
+            <select id="dynVolSelect" class="compact-select">
+              <option value="OFF">Aus</option>
+              <option value="LIT">Light</option>
+              <option value="MED">Medium</option>
+              <option value="HEV">Heavy</option>
+            </select>
           </div>
 
           <div class="level-row">
@@ -172,12 +198,12 @@
               <svg viewBox="0 0 24 24"><path d="M4 4h5v16H4V4Zm2 2v12h1V6H6Zm5 6h9v2h-9v-2Z"/></svg>
             </div>
             <div class="level-copy">
-              <div class="setting-name">Subwoofer</div>
-              <div class="setting-desc">Pegel anpassen</div>
+              <div class="setting-name">Subwoofer-Kanalpegel</div>
+              <div class="setting-desc">Für die aktuelle Eingangsquelle</div>
             </div>
             <div class="level-slider">
               <input id="subSlider" type="range" min="-12" max="12" step=".5">
-              <div class="level-value" id="subValue">-2 dB</div>
+              <div class="level-value" id="subValue">0 dB</div>
             </div>
           </div>
 
@@ -186,8 +212,8 @@
               <svg viewBox="0 0 24 24"><path d="M12 3a5 5 0 0 0-5 5v8a5 5 0 0 0 10 0V8a5 5 0 0 0-5-5Zm0 2a3 3 0 0 1 3 3v8a3 3 0 0 1-6 0V8a3 3 0 0 1 3-3Z"/></svg>
             </div>
             <div class="level-copy">
-              <div class="setting-name">Center Level</div>
-              <div class="setting-desc">Sprachverständlichkeit</div>
+              <div class="setting-name">Center-Kanalpegel</div>
+              <div class="setting-desc">Für die aktuelle Eingangsquelle</div>
             </div>
             <div class="level-slider">
               <input id="centerSlider" type="range" min="-12" max="12" step=".5">
@@ -195,6 +221,105 @@
             </div>
           </div>
         </div>
+      </section>
+
+      <section class="advanced-audio glass-panel" id="advancedAudioSection">
+        <div class="section-head">
+          <div>
+            <h2>Klang & Pegel</h2>
+            <div class="section-sub">NR1605-Protokollfunktionen · direkt steuerbar</div>
+          </div>
+          <div class="verified-chip">✓ verifiziert</div>
+        </div>
+
+        <div class="control-grid two-col">
+          <div class="control-card">
+            <div class="control-card-head"><div><strong>Tone Control</strong><span>Bass und Höhen aktivieren</span></div><label class="ios-switch"><input type="checkbox" id="toneToggle"><span></span></label></div>
+            <div class="mini-slider-row"><label>Bass</label><input id="bassSlider" type="range" min="-6" max="6" step="1"><output id="bassValue">0 dB</output></div>
+            <div class="mini-slider-row"><label>Höhen</label><input id="trebleSlider" type="range" min="-6" max="6" step="1"><output id="trebleValue">0 dB</output></div>
+          </div>
+
+          <div class="control-card">
+            <div class="control-card-head"><div><strong>Dialog Level</strong><span>Dialogpegel für die aktuelle Quelle</span></div><label class="ios-switch"><input type="checkbox" id="dialogToggle"><span></span></label></div>
+            <div class="mini-slider-row wide"><input id="dialogSlider" type="range" min="-12" max="12" step="0.5"><output id="dialogValue">0 dB</output></div>
+          </div>
+
+          <div class="control-card">
+            <div class="control-card-head"><div><strong>Subwoofer Level</strong><span>Separater Subwoofer-Pegel</span></div><label class="ios-switch"><input type="checkbox" id="subLevelToggle"><span></span></label></div>
+            <div class="mini-slider-row wide"><input id="subLevelSlider" type="range" min="-12" max="12" step="0.5"><output id="subLevelValue">0 dB</output></div>
+          </div>
+
+          <div class="control-card compact-card">
+            <label class="stack-field"><span>Cinema EQ</span><label class="ios-switch"><input type="checkbox" id="cinemaEqToggle"><span></span></label></label>
+            <label class="stack-field"><span>M-DAX</span><select id="mdaxSelect" class="compact-select"><option value="OFF">Aus</option><option value="LOW">Low</option><option value="MED">Medium</option><option value="HI">High</option></select></label>
+            <label class="stack-field"><span>DRC</span><select id="drcSelect" class="compact-select"><option value="OFF">Aus</option><option value="AUTO">Auto</option><option value="LOW">Low</option><option value="MID">Medium</option><option value="HI">High</option></select></label>
+          </div>
+
+          <div class="control-card span-2">
+            <div class="control-card-head"><div><strong>Audio Delay</strong><span>0–200 ms</span></div><output id="delayValue">0 ms</output></div>
+            <input id="delaySlider" class="full-slider" type="range" min="0" max="200" step="1">
+          </div>
+        </div>
+      </section>
+
+      <section class="video-controls glass-panel" id="videoSection">
+        <div class="section-head">
+          <div><h2>Video & HDMI</h2><div class="section-sub">Bildmodus, HDMI-Audio und Video Select</div></div>
+          <div class="verified-chip">✓ NR1605</div>
+        </div>
+        <div class="select-control-grid">
+          <label class="select-card"><span>Bildmodus</span><select id="pictureModeSelect" class="compact-select"><option value="OFF">Aus</option><option value="STD">Standard</option><option value="MOV">Movie</option><option value="VVD">Vivid</option><option value="STM">Streaming</option><option value="DAY">ISF Day</option><option value="NGT">ISF Night</option><option value="CTM">Custom</option></select></label>
+          <label class="select-card"><span>HDMI Audio Out</span><select id="hdmiAudioSelect" class="compact-select"><option value="AMP">AVR</option><option value="TV">TV</option></select></label>
+          <label class="select-card"><span>Video Select</span><select id="videoSelectSelect" class="compact-select"></select></label>
+        </div>
+      </section>
+
+      <section class="system-controls glass-panel" id="systemSection">
+        <div class="section-head">
+          <div><h2>System</h2><div class="section-sub">Display, Sleep, ECO, Auto-Standby und Smart Select</div></div>
+          <div class="verified-chip">✓ direkt</div>
+        </div>
+        <div class="select-control-grid four">
+          <label class="select-card"><span>Display</span><select id="dimmerSelect" class="compact-select"><option value="BRI">Bright</option><option value="DIM">Dim</option><option value="DAR">Dark</option><option value="OFF">Off</option></select></label>
+          <label class="select-card"><span>Sleep Timer</span><select id="sleepSelect" class="compact-select"></select></label>
+          <label class="select-card"><span>ECO</span><select id="ecoSelect" class="compact-select"><option value="OFF">Off</option><option value="AUTO">Auto</option><option value="ON">On</option></select></label>
+          <label class="select-card"><span>Auto Standby</span><select id="standbySelect" class="compact-select"><option value="OFF">Off</option><option value="15M">15 Min.</option><option value="30M">30 Min.</option><option value="60M">60 Min.</option></select></label>
+        </div>
+        <div class="smart-select-wrap">
+          <div class="smart-head"><strong>Smart Select</strong><span>Abrufen oder aktuellen Zustand bewusst speichern</span></div>
+          <div class="smart-grid" id="smartGrid"></div>
+        </div>
+      </section>
+
+      <section class="zone2-controls glass-panel" id="zone2Section">
+        <div class="section-head">
+          <div><h2>Zone 2</h2><div class="section-sub">Eigene Quelle, Lautstärke und Kanalpegel</div></div>
+          <button class="zone-power" id="zone2PowerBtn">Zone 2 AUS</button>
+        </div>
+        <div class="zone2-grid">
+          <label class="select-card"><span>Quelle</span><select id="zone2SourceSelect" class="compact-select"></select></label>
+          <button class="action-card" id="zone2MuteBtn"><span>Mute</span><strong>Aus</strong></button>
+          <div class="control-card span-2">
+            <div class="control-card-head"><div><strong>Zone-2-Lautstärke</strong><span>separater Pegel</span></div><output id="zone2VolumeValue">-40.0 dB</output></div>
+            <input id="zone2VolumeSlider" class="full-slider" type="range" min="-80" max="18" step="0.5">
+          </div>
+          <div class="control-card">
+            <div class="mini-slider-row"><label>Links</label><input id="zone2LeftSlider" type="range" min="-12" max="12" step="1"><output id="zone2LeftValue">0 dB</output></div>
+            <div class="mini-slider-row"><label>Rechts</label><input id="zone2RightSlider" type="range" min="-12" max="12" step="1"><output id="zone2RightValue">0 dB</output></div>
+          </div>
+          <div class="control-card compact-card">
+            <label class="stack-field"><span>Zone 2 Bass</span><input id="zone2Bass" type="range" min="-10" max="10" step="1"><output id="zone2BassValue">0 dB</output></label>
+            <label class="stack-field"><span>Zone 2 Höhen</span><input id="zone2Treble" type="range" min="-10" max="10" step="1"><output id="zone2TrebleValue">0 dB</output></label>
+          </div>
+        </div>
+      </section>
+
+      <section class="diagnostic-controls glass-panel" id="diagnosticSection">
+        <div class="section-head">
+          <div><h2>Receiver-Status</h2><div class="section-sub">Die Browser-Version sendet direkt. Live-Rücklesen über TCP kommt später in den iPad-Native-Bridge.</div></div>
+          <span class="status-mode">HTTP Direct</span>
+        </div>
+        <div class="command-log" id="commandLog"><div class="log-empty">Noch kein Befehl in dieser Sitzung gesendet.</div></div>
       </section>
 
       <section class="speaker-layout glass-panel">
@@ -232,10 +357,9 @@
           </div>
         </div>
 
-        <div class="transport-center">
-          <button class="transport-btn">⏮</button>
-          <button class="transport-main" id="transportPlay">Ⅱ</button>
-          <button class="transport-btn">⏭</button>
+        <div class="transport-center status-center">
+          <span class="protocol-dot"></span>
+          <span>Direkte LAN-Steuerung</span>
         </div>
 
         <div class="transport-right">
@@ -248,11 +372,11 @@
     </main>
 
     <nav class="bottom-nav">
-      <button class="nav-item"><span class="nav-icon">⌂</span><span>Start</span></button>
-      <button class="nav-item"><span class="nav-icon">♫</span><span>Musik</span></button>
-      <button class="nav-item active"><span class="nav-icon">◉</span><span>Receiver</span></button>
-      <button class="nav-item"><span class="nav-icon">▱</span><span>Räume</span></button>
-      <button class="nav-item"><span class="nav-icon">⚙</span><span>Einstellungen</span></button>
+      <button class="nav-item" data-scroll="receiverSection"><span class="nav-icon">⌂</span><span>Start</span></button>
+      <button class="nav-item" data-scroll="scenesSection"><span class="nav-icon">🎬</span><span>Szenen</span></button>
+      <button class="nav-item active" data-scroll="sourcesSection"><span class="nav-icon">◉</span><span>Receiver</span></button>
+      <button class="nav-item" data-scroll="audioSection"><span class="nav-icon">⌁</span><span>Audio</span></button>
+      <button class="nav-item" id="navSetup"><span class="nav-icon">⚙</span><span>Setup</span></button>
     </nav>
 
     <div class="device-drawer" id="deviceDrawer">
@@ -262,24 +386,22 @@
         <div class="drawer-head">
           <div>
             <div class="drawer-kicker">GERÄTE</div>
-            <h3>Receiver auswählen</h3>
+            <h3>Receiver</h3>
           </div>
           <button class="drawer-close" data-close>×</button>
         </div>
-        <button class="device-entry active" data-device="denon">
-          <div class="device-orb"></div>
-          <div><strong>Denon AVR-X4000</strong><span>Wohnzimmer · Demo</span></div>
-          <div class="check">✓</div>
-        </button>
-        <button class="device-entry" data-device="marantz">
+        <div class="device-entry active static-device">
           <div class="device-orb alt"></div>
-          <div><strong>Marantz NR1605</strong><span>Wohnzimmer · Demo</span></div>
+          <div><strong>Marantz NR1605</strong><span>Aktives Testgerät · Live-Steuerung</span></div>
           <div class="check">✓</div>
-        </button>
-        <button class="add-device" id="addDeviceBtn">＋ Gerät hinzufügen</button>
+        </div>
+        <div class="device-entry unavailable static-device">
+          <div class="device-orb"></div>
+          <div><strong>Denon AVR-X4000</strong><span>Noch nicht vorhanden · deshalb nicht bedienbar</span></div>
+          <div class="lock">–</div>
+        </div>
       </div>
     </div>
-
 
     <div class="connection-modal" id="connectionModal">
       <div class="connection-backdrop" data-conn-close></div>
@@ -322,6 +444,34 @@
           <button class="secondary-action" id="openWebUiBtn">Webinterface öffnen</button>
         </div>
 
+        
+        <div class="config-section">
+          <div class="config-title">Quellenbelegung</div>
+          <div class="config-copy">Jede sichtbare Quelle wird auf einen echten NR1605-Eingang gelegt.</div>
+          <div id="sourceMappingRows" class="mapping-list"></div>
+        </div>
+
+        <div class="config-section">
+          <div class="config-title">Szenen</div>
+          <div class="config-copy">Wähle, welche echte Quelle die Szenen Film, Musik und Gaming verwenden.</div>
+          <div class="scene-config-grid">
+            <label>Filmabend<select id="filmSourceSelect" class="compact-select"></select></label>
+            <label>Musik<select id="musicSourceSelect" class="compact-select"></select></label>
+            <label>Gaming<select id="gamingSourceSelect" class="compact-select"></select></label>
+          </div>
+        </div>
+
+        <div class="config-section layout-config">
+          <div>
+            <div class="config-title">Lautsprecher-Layout</div>
+            <div class="config-copy">Nur Anzeige – beeinflusst keine Receiver-Konfiguration.</div>
+          </div>
+          <select id="layoutSelect" class="compact-select">
+            <option value="5.1">5.1</option>
+            <option value="7.1">7.1</option>
+          </select>
+        </div>
+
         <div class="live-summary" id="liveSummary">
           <span class="live-dot"></span>
           <div>
@@ -357,6 +507,6 @@
     <div class="toast hidden" id="toast"></div>
   </div>
 
-  <script src="app.js?v=0.4.2"></script>
+  <script src="app.js?v=0.6.0"></script>
 </body>
 </html>
