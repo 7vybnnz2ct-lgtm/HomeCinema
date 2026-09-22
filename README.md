@@ -1,44 +1,21 @@
-# Cinema Control v0.1
+# Cinema Control v0.2
 
-Erster lauffähiger Test-Build für deine Receiver-App.
+Diese Version ist die optisch deutlich näher am Mockup liegende zweite Version.
 
-## Enthalten
-- dunkles modernes Receiver-Dashboard
-- Geräteumschaltung:
-  - Denon AVR-X4000
-  - Marantz NR1605
-- Demo-/Simulationsmodus
-- Lautstärke-Ring
-- Quellenumschaltung
-- Klangmodi
-- Schnellszenen
-- Audio-Einstellungen
-- Lautsprecher-Layout
-- PWA-fähig für iPad Homescreen
+## Verbesserungen gegenüber v0.1
+- deutlich hochwertigeres Dark-Glass-Design
+- Layout näher am verbindlichen Mockup
+- großer Lautstärke-Ring mit Tick-Markierungen
+- Schnellszenen wie im Mockup
+- Quellenkarten / Klangmodus / Audio-Einstellungen verfeinert
+- Lautsprecher-Raumlayout stärker visualisiert
+- untere Transportleiste und Navigation näher am Mockup
+- Gerätewahl über Drawer
+- Denon AVR-X4000 und Marantz NR1605 weiterhin als Demo-Geräte
 
-## Wichtig
-Diese Version steuert noch **keine echten Geräte**. Sie ist dafür gedacht,
-die App-Struktur, das Design und die Bedienlogik mit dir vorab zu testen.
+## Test
+GitHub Pages wie zuvor deployen.
 
-## Nächste echte Ausbaustufe
-Später kann ein lokaler Bridge-Dienst oder eine Netzwerkschnittstelle eingebaut werden, die:
-- Denon AVR-X4000 per Netzwerkprotokoll ansteuert
-- Marantz NR1605 ebenfalls integriert
-- Zustände live liest
-- Szenen tatsächlich auf den Geräten ausführt
-
-## Deployment auf GitHub Pages
-1. ZIP entpacken
-2. Dateien in ein GitHub-Repository hochladen
-3. Repository Settings -> Pages
-4. Deploy from branch -> main / root
-5. URL auf dem iPad öffnen
-6. Optional: Zum Home-Bildschirm hinzufügen
-
-## Empfohlene nächste Version
-- echte Geräteeinstellungen-Seite
-- gespeicherte Szenen
-- Räume/Zonen
-- Live-Status-Badges
-- Konfigurierbare Quellen
-- optional GPT-Helfer für Szenen / Erklärungen
+## Hinweis
+Die Receiver-Steuerung läuft weiterhin im Demo-/Simulationsmodus.
+Die nächste technische Ausbaustufe kann echte Geräteparameter und Netzwerkverbindung vorbereiten.

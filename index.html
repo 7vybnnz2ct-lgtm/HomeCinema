@@ -1,236 +1,283 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="de">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#0b0f14" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="Cinema Control" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#070b10">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Cinema Control">
   <title>Cinema Control</title>
-  <link rel="manifest" href="manifest.webmanifest" />
-  <link rel="icon" href="icon.svg" type="image/svg+xml" />
-  <link rel="apple-touch-icon" href="icon-192.png" />
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  <div class="ambient ambient-a"></div>
+  <div class="ambient ambient-b"></div>
+
   <div id="app">
     <header class="topbar">
-      <div class="brand-wrap">
-        <div class="brand-icon">C</div>
-        <div>
-          <div class="brand-title">Cinema Control</div>
-          <div class="brand-sub" id="brandSub">Demo-Modus · Heimkino-Steuerung</div>
+      <div class="title-block">
+        <div class="title-row">
+          <h1>Cinema Control</h1>
+          <div class="status-pill"><span class="status-dot"></span><span id="statusText">Verbunden</span></div>
         </div>
+        <div class="subtitle" id="subtitle">Denon AVR-X4000 · Wohnzimmer</div>
       </div>
+
       <div class="top-actions">
-        <button class="pill active" id="connectionState">Demo aktiv</button>
-        <button class="icon-btn" id="sceneMenuBtn" title="Szenen">🎬</button>
-        <button class="icon-btn" id="settingsBtn" title="Einstellungen">⚙️</button>
+        <button class="top-icon" aria-label="Suche">
+          <svg viewBox="0 0 24 24"><path d="M10.8 4.6a6.2 6.2 0 1 0 0 12.4 6.2 6.2 0 0 0 0-12.4Zm0-2a8.2 8.2 0 1 1 0 16.4 8.2 8.2 0 0 1 0-16.4Zm6.2 13.7 4.3 4.3-1.4 1.4-4.3-4.3 1.4-1.4Z"/></svg>
+        </button>
+        <button class="top-chip" id="sceneBtn">
+          <svg viewBox="0 0 24 24"><path d="M4 5h16v14H4V5Zm2 2v10h12V7H6Zm2-5 2 3h2l-2-3H8Zm5 0 2 3h2l-2-3h-2Z"/></svg>
+          Szenen
+        </button>
+        <button class="top-icon" id="settingsBtn" aria-label="Einstellungen">
+          <svg viewBox="0 0 24 24"><path d="M12 8.2A3.8 3.8 0 1 0 12 15.8 3.8 3.8 0 0 0 12 8.2Zm0 2A1.8 1.8 0 1 1 12 13.8 1.8 1.8 0 0 1 12 10.2Zm8.5 1.8c0-.5 0-1-.1-1.5l2-1.6-2-3.5-2.5 1a8.2 8.2 0 0 0-2.6-1.5L15 2.2h-4l-.4 2.7A8.2 8.2 0 0 0 8 6.4l-2.5-1-2 3.5 2 1.6a8.8 8.8 0 0 0 0 3l-2 1.6 2 3.5 2.5-1a8.2 8.2 0 0 0 2.6 1.5l.4 2.7h4l.4-2.7a8.2 8.2 0 0 0 2.6-1.5l2.5 1 2-3.5-2-1.6c.1-.5.1-1 .1-1.5Z"/></svg>
+        </button>
       </div>
     </header>
 
-    <main class="shell">
-      <section class="hero glass">
+    <main class="dashboard">
+      <section class="hero-card glass-panel">
         <div class="hero-left">
-          <div class="eyebrow">RECEIVER</div>
-          <h1 id="deviceName">Denon AVR-X4000</h1>
-          <div class="hero-meta" id="deviceRoom">Wohnzimmer · Verbunden im Demo-Modus</div>
-
-          <div class="device-switcher">
-            <button class="device-chip active" data-device="denon">Denon AVR-X4000</button>
-            <button class="device-chip" data-device="marantz">Marantz NR1605</button>
+          <div class="power-line">
+            <button class="power-button active" id="powerBtn">
+              <svg viewBox="0 0 24 24"><path d="M11 2h2v10h-2V2Zm1 20A9 9 0 0 1 6.2 6.1l1.3 1.5A7 7 0 1 0 16.5 7.6l1.3-1.5A9 9 0 0 1 12 22Z"/></svg>
+            </button>
+            <div>
+              <div class="minor-label">Receiver</div>
+              <div class="hero-value" id="powerText">EIN</div>
+            </div>
           </div>
 
-          <div class="status-grid">
-            <div class="status-card">
-              <div class="status-label">Power</div>
-              <div class="status-value" id="powerState">EIN</div>
+          <div class="hero-divider"></div>
+
+          <div class="hero-info">
+            <div class="info-block">
+              <div class="minor-label">Aktuelle Quelle</div>
+              <div class="info-value" id="sourceText">Xbox</div>
             </div>
-            <div class="status-card">
-              <div class="status-label">Quelle</div>
-              <div class="status-value" id="sourceState">Xbox</div>
-            </div>
-            <div class="status-card">
-              <div class="status-label">Klangmodus</div>
-              <div class="status-value" id="soundModeState">Dolby Digital / 5.1</div>
+            <div class="info-block">
+              <div class="minor-label">Klangmodus</div>
+              <div class="info-value" id="modeText">Dolby Digital / 5.1</div>
             </div>
           </div>
         </div>
 
-        <div class="hero-right glass-dark">
-          <div class="dial-wrap">
-            <div class="dial-ring">
-              <svg viewBox="0 0 220 220" class="dial-svg">
-                <circle cx="110" cy="110" r="88" class="dial-bg"></circle>
-                <circle cx="110" cy="110" r="88" class="dial-progress" id="dialProgress"></circle>
-              </svg>
-              <div class="dial-center">
-                <div class="dial-db" id="volumeDisplay">-38.5 dB</div>
-                <div class="dial-label">Lautstärke</div>
-              </div>
+        <div class="volume-zone">
+          <div class="volume-ring">
+            <svg class="volume-svg" viewBox="0 0 260 260">
+              <circle class="ring-track" cx="130" cy="130" r="102"></circle>
+              <circle class="ring-active" id="ringActive" cx="130" cy="130" r="102"></circle>
+              <g class="ring-ticks" id="ringTicks"></g>
+            </svg>
+            <div class="ring-center">
+              <div class="volume-big" id="volumeBig">-38.5 dB</div>
+              <div class="volume-caption">Lautstärke</div>
             </div>
-            <div class="dial-buttons">
-              <button class="round-btn" id="volDownBtn">−</button>
-              <button class="round-btn" id="volUpBtn">+</button>
+          </div>
+          <div class="volume-actions">
+            <button class="round-control" id="volDown">−</button>
+            <button class="round-control" id="volUp">+</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="scene-area">
+        <div class="section-head compact">
+          <h2>Schnellszenen</h2>
+          <button class="link-btn">Alle anzeigen ›</button>
+        </div>
+        <div class="scene-row">
+          <button class="scene-card film" data-scene="film">
+            <div class="scene-symbol">🎬</div>
+            <div class="scene-name">Filmabend</div>
+            <div class="scene-desc">Kino-Feeling<br>zu Hause</div>
+          </button>
+          <button class="scene-card music" data-scene="music">
+            <div class="scene-symbol">♫</div>
+            <div class="scene-name">Musik</div>
+            <div class="scene-desc">Reiner Klang<br>ganz entspannt</div>
+          </button>
+          <button class="scene-card gaming" data-scene="gaming">
+            <div class="scene-symbol">🎮</div>
+            <div class="scene-name">Gaming</div>
+            <div class="scene-desc">Direkt. Präzise.<br>Mittendrin.</div>
+          </button>
+          <button class="scene-card night" data-scene="night">
+            <div class="scene-symbol">☾</div>
+            <div class="scene-name">Abends</div>
+            <div class="scene-desc">Leiser genießen</div>
+          </button>
+        </div>
+      </section>
+
+      <section class="sources glass-panel">
+        <div class="section-head"><h2>Quellen</h2></div>
+        <div class="source-grid" id="sourceGrid"></div>
+      </section>
+
+      <section class="modes glass-panel">
+        <div class="section-head"><h2>Klangmodus</h2></div>
+        <div class="mode-grid" id="modeGrid"></div>
+      </section>
+
+      <section class="audio-settings glass-panel">
+        <div class="section-head"><h2>Audio-Einstellungen</h2></div>
+
+        <div class="setting-list">
+          <div class="setting-row">
+            <div class="setting-icon">
+              <svg viewBox="0 0 24 24"><path d="M4 9h2v6H4V9Zm4-4h2v14H8V5Zm4 7h2v7h-2v-7Zm4-10h2v17h-2V2Zm4 5h2v12h-2V7Z"/></svg>
+            </div>
+            <div class="setting-copy">
+              <div class="setting-name" id="audysseyTitle">Audyssey XT32</div>
+              <div class="setting-desc">Raumkorrektur</div>
+            </div>
+            <label class="ios-switch"><input type="checkbox" id="audysseyToggle"><span></span></label>
+          </div>
+
+          <div class="setting-row">
+            <div class="setting-icon">
+              <svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2Zm4 5h2V6H7v12Zm4-2h2V8h-2v8Zm4 5h2V3h-2v18Zm4-9h2v-2h-2v2Z"/></svg>
+            </div>
+            <div class="setting-copy">
+              <div class="setting-name">Dynamic EQ</div>
+              <div class="setting-desc">Klangbalance bei niedriger Lautstärke</div>
+            </div>
+            <label class="ios-switch"><input type="checkbox" id="dynEqToggle"><span></span></label>
+          </div>
+
+          <div class="setting-row">
+            <div class="setting-icon">
+              <svg viewBox="0 0 24 24"><path d="M3 12h3l2-4 4 8 3-6 2 2h4v2h-5l-1-1-3 6-4-8-1 3H3v-2Z"/></svg>
+            </div>
+            <div class="setting-copy">
+              <div class="setting-name">Dynamic Volume</div>
+              <div class="setting-desc">Lautstärkeunterschiede ausgleichen</div>
+            </div>
+            <label class="ios-switch"><input type="checkbox" id="dynVolToggle"><span></span></label>
+          </div>
+
+          <div class="level-row">
+            <div class="level-icon">
+              <svg viewBox="0 0 24 24"><path d="M4 4h5v16H4V4Zm2 2v12h1V6H6Zm5 6h9v2h-9v-2Z"/></svg>
+            </div>
+            <div class="level-copy">
+              <div class="setting-name">Subwoofer</div>
+              <div class="setting-desc">Pegel anpassen</div>
+            </div>
+            <div class="level-slider">
+              <input id="subSlider" type="range" min="-12" max="12" step=".5">
+              <div class="level-value" id="subValue">-2 dB</div>
+            </div>
+          </div>
+
+          <div class="level-row">
+            <div class="level-icon">
+              <svg viewBox="0 0 24 24"><path d="M12 3a5 5 0 0 0-5 5v8a5 5 0 0 0 10 0V8a5 5 0 0 0-5-5Zm0 2a3 3 0 0 1 3 3v8a3 3 0 0 1-6 0V8a3 3 0 0 1 3-3Z"/></svg>
+            </div>
+            <div class="level-copy">
+              <div class="setting-name">Center Level</div>
+              <div class="setting-desc">Sprachverständlichkeit</div>
+            </div>
+            <div class="level-slider">
+              <input id="centerSlider" type="range" min="-12" max="12" step=".5">
+              <div class="level-value" id="centerValue">0 dB</div>
             </div>
           </div>
         </div>
       </section>
 
-      <section class="two-col">
-        <div class="left-col">
-          <section class="panel glass">
-            <div class="panel-head">
-              <h2>Schnellszenen</h2>
-              <button class="text-btn">Alle anzeigen</button>
-            </div>
-            <div class="scene-grid">
-              <button class="scene-card amber" data-scene="film">
-                <div class="scene-icon">🎬</div>
-                <div class="scene-title">Filmabend</div>
-                <div class="scene-copy">Kino-Feeling zu Hause</div>
-              </button>
-              <button class="scene-card purple" data-scene="music">
-                <div class="scene-icon">🎵</div>
-                <div class="scene-title">Musik</div>
-                <div class="scene-copy">Reiner Klang, ganz entspannt</div>
-              </button>
-              <button class="scene-card cyan" data-scene="gaming">
-                <div class="scene-icon">🎮</div>
-                <div class="scene-title">Gaming</div>
-                <div class="scene-copy">Direkt. Präzise. Mittendrin.</div>
-              </button>
-              <button class="scene-card blue" data-scene="night">
-                <div class="scene-icon">🌙</div>
-                <div class="scene-title">Abends</div>
-                <div class="scene-copy">Leiser genießen</div>
-              </button>
-            </div>
-          </section>
-
-          <section class="panel glass">
-            <div class="panel-head"><h2>Quellen</h2></div>
-            <div class="source-grid" id="sourceGrid"></div>
-          </section>
-
-          <section class="panel glass">
-            <div class="panel-head"><h2>Audio-Einstellungen</h2></div>
-            <div class="setting-row">
-              <div>
-                <div class="setting-title">Audyssey XT32 / MultEQ</div>
-                <div class="setting-sub" id="audysseyLabel">Raumkorrektur</div>
-              </div>
-              <label class="switch">
-                <input type="checkbox" id="audysseyToggle">
-                <span class="slider"></span>
-              </label>
-            </div>
-            <div class="setting-row">
-              <div>
-                <div class="setting-title">Dynamic EQ</div>
-                <div class="setting-sub">Klangbalance bei niedriger Lautstärke</div>
-              </div>
-              <label class="switch">
-                <input type="checkbox" id="dynEqToggle">
-                <span class="slider"></span>
-              </label>
-            </div>
-            <div class="setting-row">
-              <div>
-                <div class="setting-title">Dynamic Volume</div>
-                <div class="setting-sub">Lautstärkeunterschiede ausgleichen</div>
-              </div>
-              <label class="switch">
-                <input type="checkbox" id="dynVolToggle">
-                <span class="slider"></span>
-              </label>
-            </div>
-
-            <div class="slider-row">
-              <div class="slider-copy">
-                <div class="setting-title">Subwoofer</div>
-                <div class="setting-sub">Pegel anpassen</div>
-              </div>
-              <div class="slider-group">
-                <input type="range" min="-12" max="12" step="0.5" id="subSlider">
-                <div class="slider-value" id="subValue">0 dB</div>
-              </div>
-            </div>
-
-            <div class="slider-row">
-              <div class="slider-copy">
-                <div class="setting-title">Center Level</div>
-                <div class="setting-sub">Sprachverständlichkeit</div>
-              </div>
-              <div class="slider-group">
-                <input type="range" min="-12" max="12" step="0.5" id="centerSlider">
-                <div class="slider-value" id="centerValue">0 dB</div>
-              </div>
-            </div>
-          </section>
+      <section class="speaker-layout glass-panel">
+        <div class="section-head">
+          <h2>Lautsprecher-Layout</h2>
+          <div class="layout-count" id="layoutCount">7.1</div>
         </div>
 
-        <div class="right-col">
-          <section class="panel glass">
-            <div class="panel-head"><h2>Klangmodus</h2></div>
-            <div class="mode-grid" id="modeGrid"></div>
-          </section>
+        <div class="room-stage">
+          <div class="room-floor"></div>
+          <div class="stage-ring ring-a"></div>
+          <div class="stage-ring ring-b"></div>
 
-          <section class="panel glass speaker-panel">
-            <div class="panel-head">
-              <h2>Lautsprecher-Layout</h2>
-              <div class="layout-badge" id="layoutBadge">7.1</div>
-            </div>
-            <div class="speaker-room" id="speakerRoom">
-              <div class="ring ring1"></div>
-              <div class="ring ring2"></div>
-              <div class="sofa"></div>
-              <div class="speaker fl">FL</div>
-              <div class="speaker c">C</div>
-              <div class="speaker fr">FR</div>
-              <div class="speaker sl">SL</div>
-              <div class="speaker sr">SR</div>
-              <div class="speaker sbl">SBL</div>
-              <div class="speaker sbr">SBR</div>
-              <div class="speaker sub">SUB</div>
-            </div>
-          </section>
+          <div class="speaker-box sp-fl"><span>FL</span></div>
+          <div class="speaker-box center-wide sp-c"><span>C</span></div>
+          <div class="speaker-box sp-fr"><span>FR</span></div>
+          <div class="speaker-box small sp-sl"><span>SL</span></div>
+          <div class="speaker-box subwoofer-box sp-sub"><span>SUB</span></div>
+          <div class="speaker-box small sp-sr"><span>SR</span></div>
+          <div class="speaker-box small sp-sbl"><span>SBL</span></div>
+          <div class="speaker-box small sp-sbr"><span>SBR</span></div>
 
-          <section class="panel glass">
-            <div class="panel-head"><h2>Test-Player / Aktivität</h2></div>
-            <div class="now-playing">
-              <div class="thumb">▶</div>
-              <div class="np-copy">
-                <div class="np-title" id="activityTitle">Xbox Series X</div>
-                <div class="np-sub" id="activitySub">Wiedergabe aktiv</div>
-              </div>
-            </div>
-            <div class="mini-transport">
-              <button class="mini-btn">⏮</button>
-              <button class="mini-btn big" id="playPauseBtn">⏸</button>
-              <button class="mini-btn">⏭</button>
-            </div>
-            <div class="mini-vol">
-              <span>🔊</span>
-              <input type="range" min="-80" max="18" step="0.5" id="footerVol">
-              <span id="footerVolValue">-38.5 dB</span>
-            </div>
-          </section>
+          <div class="sofa">
+            <div class="seat"></div><div class="seat"></div><div class="seat"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="transport glass-panel">
+        <div class="transport-left">
+          <div class="media-thumb" id="mediaThumb">🎮</div>
+          <div>
+            <div class="media-title" id="mediaTitle">Xbox Series X</div>
+            <div class="media-sub" id="mediaSub">Wiedergabe aktiv</div>
+          </div>
+        </div>
+
+        <div class="transport-center">
+          <button class="transport-btn">⏮</button>
+          <button class="transport-main" id="transportPlay">Ⅱ</button>
+          <button class="transport-btn">⏭</button>
+        </div>
+
+        <div class="transport-right">
+          <span class="speaker-mini">🔊</span>
+          <input id="footerVolume" type="range" min="-80" max="18" step=".5">
+          <div class="footer-db" id="footerDb">-38.5 dB</div>
         </div>
       </section>
     </main>
 
-    <nav class="bottom-nav glass">
-      <button class="nav-item">🏠<span>Start</span></button>
-      <button class="nav-item">🎵<span>Musik</span></button>
-      <button class="nav-item active">📡<span>Receiver</span></button>
-      <button class="nav-item">🛋️<span>Räume</span></button>
-      <button class="nav-item">⚙️<span>Einstellungen</span></button>
+    <nav class="bottom-nav">
+      <button class="nav-item"><span class="nav-icon">⌂</span><span>Start</span></button>
+      <button class="nav-item"><span class="nav-icon">♫</span><span>Musik</span></button>
+      <button class="nav-item active"><span class="nav-icon">◉</span><span>Receiver</span></button>
+      <button class="nav-item"><span class="nav-icon">▱</span><span>Räume</span></button>
+      <button class="nav-item"><span class="nav-icon">⚙</span><span>Einstellungen</span></button>
     </nav>
+
+    <div class="device-drawer" id="deviceDrawer">
+      <div class="drawer-backdrop" data-close></div>
+      <div class="drawer-card">
+        <div class="drawer-handle"></div>
+        <div class="drawer-head">
+          <div>
+            <div class="drawer-kicker">GERÄTE</div>
+            <h3>Receiver auswählen</h3>
+          </div>
+          <button class="drawer-close" data-close>×</button>
+        </div>
+        <button class="device-entry active" data-device="denon">
+          <div class="device-orb"></div>
+          <div><strong>Denon AVR-X4000</strong><span>Wohnzimmer · Demo</span></div>
+          <div class="check">✓</div>
+        </button>
+        <button class="device-entry" data-device="marantz">
+          <div class="device-orb alt"></div>
+          <div><strong>Marantz NR1605</strong><span>Wohnzimmer · Demo</span></div>
+          <div class="check">✓</div>
+        </button>
+        <button class="add-device" id="addDeviceBtn">＋ Gerät hinzufügen</button>
+      </div>
+    </div>
 
     <div class="toast hidden" id="toast"></div>
   </div>
+
   <script src="app.js"></script>
 </body>
 </html>

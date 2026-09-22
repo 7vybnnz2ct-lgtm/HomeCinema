@@ -1,277 +1,212 @@
 
 const devices = {
   denon: {
-    id: 'denon',
-    name: 'Denon AVR-X4000',
-    room: 'Wohnzimmer',
-    power: true,
-    volume: -38.5,
-    source: 'Xbox',
-    soundMode: 'Dolby Digital / 5.1',
-    sources: [
-      {id:'xbox', label:'Xbox', icon:'🎮'},
-      {id:'appletv', label:'Apple TV', icon:'📺'},
-      {id:'tv', label:'TV', icon:'🖥️'},
-      {id:'bluray', label:'Blu-ray', icon:'💿'},
-      {id:'musicserver', label:'Music Server', icon:'🗄️'}
+    id:'denon', name:'Denon AVR-X4000', room:'Wohnzimmer', power:true, volume:-38.5,
+    source:'Xbox', modeText:'Dolby Digital / 5.1', activeMode:'Dolby', layout:'7.1',
+    audysseyTitle:'Audyssey XT32', audyssey:true, dynEq:true, dynVol:false, sub:-2, center:0,
+    mediaTitle:'Xbox Series X', mediaSub:'Wiedergabe aktiv', mediaThumb:'🎮',
+    sources:[
+      {label:'Xbox',icon:'🎮'},
+      {label:'Apple TV',icon:'▣'},
+      {label:'TV',icon:'▭'},
+      {label:'Blu-ray',icon:'◉'},
+      {label:'Music Server',icon:'▤'}
     ],
-    modes: ['Stereo','Dolby','DTS','Direct','Pure Direct'],
-    activeMode: 'Dolby',
-    roomLayout: '7.1',
-    audysseyLabel: 'Raumkorrektur (XT32)',
-    audyssey: true,
-    dynamicEq: true,
-    dynamicVolume: false,
-    subLevel: -2,
-    centerLevel: 0,
-    activityTitle: 'Xbox Series X',
-    activitySub: 'Wiedergabe aktiv'
+    modes:['Stereo','Dolby','DTS','Direct','Pure Direct']
   },
   marantz: {
-    id: 'marantz',
-    name: 'Marantz NR1605',
-    room: 'Wohnzimmer',
-    power: true,
-    volume: -42.0,
-    source: 'TV',
-    soundMode: 'DTS-HD / 5.1',
-    sources: [
-      {id:'tv', label:'TV', icon:'🖥️'},
-      {id:'appletv', label:'Apple TV', icon:'📺'},
-      {id:'xbox', label:'Xbox', icon:'🎮'},
-      {id:'bluray', label:'Blu-ray', icon:'💿'},
-      {id:'media', label:'Media Player', icon:'📀'}
+    id:'marantz', name:'Marantz NR1605', room:'Wohnzimmer', power:true, volume:-42,
+    source:'TV', modeText:'DTS-HD / 5.1', activeMode:'DTS', layout:'5.1 / 7.1',
+    audysseyTitle:'Audyssey MultEQ', audyssey:true, dynEq:true, dynVol:true, sub:0, center:1,
+    mediaTitle:'Fernsehen', mediaSub:'TV-Ton aktiv', mediaThumb:'▭',
+    sources:[
+      {label:'TV',icon:'▭'},
+      {label:'Apple TV',icon:'▣'},
+      {label:'Xbox',icon:'🎮'},
+      {label:'Blu-ray',icon:'◉'},
+      {label:'Media Player',icon:'▤'}
     ],
-    modes: ['Stereo','Dolby','DTS','Movie','Music'],
-    activeMode: 'DTS',
-    roomLayout: '5.1 / 7.1',
-    audysseyLabel: 'Raumkorrektur (MultEQ)',
-    audyssey: true,
-    dynamicEq: true,
-    dynamicVolume: true,
-    subLevel: 0,
-    centerLevel: 1,
-    activityTitle: 'Fernsehen',
-    activitySub: 'TV-Ton aktiv'
+    modes:['Stereo','Dolby','DTS','Movie','Music']
   }
 };
 
-let currentDevice = 'denon';
+let current = 'denon';
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
 
-const $ = (s) => document.querySelector(s);
-const $$ = (s) => Array.from(document.querySelectorAll(s));
-
+function fmtDb(v){
+  return `${Number(v).toFixed(1)} dB`;
+}
 function toast(msg){
-  const t = $('#toast');
-  t.textContent = msg;
-  t.classList.remove('hidden');
-  clearTimeout(window.__toastTimer);
-  window.__toastTimer = setTimeout(() => t.classList.add('hidden'), 2200);
+  const el=$('#toast');
+  el.textContent=msg;
+  el.classList.remove('hidden');
+  clearTimeout(window._toast);
+  window._toast=setTimeout(()=>el.classList.add('hidden'),1800);
 }
-
-function formatDb(v){
-  return `${v.toFixed(1)} dB`;
+function mapVolume(v){
+  const min=-80,max=18;
+  const pct=(v-min)/(max-min);
+  return Math.max(0,Math.min(1,pct))*480;
 }
-
-function clamp(v, min, max){
-  return Math.max(min, Math.min(max, v));
+function setRing(v){
+  $('#ringActive').style.strokeDasharray=`${mapVolume(v)} 999`;
 }
-
-function volumeToProgress(v){
-  // Map -80 ... +18 to approx 0..420
-  const pct = (v + 80) / 98;
-  return Math.max(0, Math.min(1, pct)) * 420;
+function renderTicks(){
+  const group=$('#ringTicks');
+  if(!group) return;
+  group.innerHTML='';
+  const ns='http://www.w3.org/2000/svg';
+  for(let i=0;i<42;i++){
+    const angle=(135 + i*(270/41))*Math.PI/180;
+    const r1=111,r2=i%5===0?119:116;
+    const x1=130+Math.cos(angle)*r1, y1=130+Math.sin(angle)*r1;
+    const x2=130+Math.cos(angle)*r2, y2=130+Math.sin(angle)*r2;
+    const line=document.createElementNS(ns,'line');
+    line.setAttribute('x1',x1); line.setAttribute('y1',y1);
+    line.setAttribute('x2',x2); line.setAttribute('y2',y2);
+    group.appendChild(line);
+  }
 }
-
-function renderSources(device){
-  const host = $('#sourceGrid');
-  host.innerHTML = '';
-  device.sources.forEach(src => {
-    const el = document.createElement('button');
-    el.className = 'source-card' + (device.source === src.label ? ' active' : '');
-    el.innerHTML = `<div class="source-emoji">${src.icon}</div><div class="source-name">${src.label}</div>`;
-    el.onclick = () => {
-      device.source = src.label;
-      device.activityTitle = src.label;
-      device.activitySub = 'Quelle aktiv';
+function renderSources(d){
+  const host=$('#sourceGrid'); host.innerHTML='';
+  d.sources.forEach(src=>{
+    const b=document.createElement('button');
+    b.className='source-btn'+(src.label===d.source?' active':'');
+    b.innerHTML=`<div class="source-icon">${src.icon}</div><div class="source-label"></div>`;
+    b.querySelector('.source-label').textContent=src.label;
+    b.onclick=()=>{
+      d.source=src.label;
+      d.mediaTitle=src.label;
+      d.mediaSub='Quelle aktiv';
+      if(src.label==='Xbox') d.mediaThumb='🎮';
+      else if(src.label==='Blu-ray') d.mediaThumb='◉';
+      else d.mediaThumb='▭';
       render();
       toast(`Quelle: ${src.label}`);
     };
-    host.appendChild(el);
+    host.appendChild(b);
   });
 }
-
-function renderModes(device){
-  const host = $('#modeGrid');
-  host.innerHTML = '';
-  device.modes.forEach(mode => {
-    const btn = document.createElement('button');
-    btn.className = 'mode-btn' + (device.activeMode === mode ? ' active' : '');
-    btn.textContent = mode;
-    btn.onclick = () => {
-      device.activeMode = mode;
-      if (mode === 'Dolby') device.soundMode = 'Dolby Digital / 5.1';
-      else if (mode === 'DTS') device.soundMode = 'DTS-HD / 5.1';
-      else device.soundMode = mode;
-      render();
-      toast(`Klangmodus: ${mode}`);
+function renderModes(d){
+  const host=$('#modeGrid'); host.innerHTML='';
+  d.modes.forEach(m=>{
+    const b=document.createElement('button');
+    b.className='mode-btn'+(m===d.activeMode?' active':'');
+    b.textContent=m;
+    b.onclick=()=>{
+      d.activeMode=m;
+      if(m==='Dolby') d.modeText='Dolby Digital / 5.1';
+      else if(m==='DTS') d.modeText='DTS-HD / 5.1';
+      else d.modeText=m;
+      render(); toast(`Klangmodus: ${m}`);
     };
-    host.appendChild(btn);
+    host.appendChild(b);
   });
 }
-
-function renderDeviceChips(){
-  $$('.device-chip').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.device === currentDevice);
+function renderDeviceEntries(){
+  $$('.device-entry').forEach(el=>{
+    el.classList.toggle('active',el.dataset.device===current);
   });
 }
-
 function render(){
-  const d = devices[currentDevice];
-
-  $('#deviceName').textContent = d.name;
-  $('#deviceRoom').textContent = `${d.room} · Verbunden im Demo-Modus`;
-  $('#brandSub').textContent = `Demo-Modus · ${d.name}`;
-  $('#powerState').textContent = d.power ? 'EIN' : 'AUS';
-  $('#sourceState').textContent = d.source;
-  $('#soundModeState').textContent = d.soundMode;
-  $('#volumeDisplay').textContent = formatDb(d.volume);
-  $('#footerVolValue').textContent = formatDb(d.volume);
-  $('#footerVol').value = d.volume;
-  $('#audysseyLabel').textContent = d.audysseyLabel;
-  $('#layoutBadge').textContent = d.roomLayout;
-  $('#activityTitle').textContent = d.activityTitle;
-  $('#activitySub').textContent = d.activitySub;
-
-  $('#audysseyToggle').checked = d.audyssey;
-  $('#dynEqToggle').checked = d.dynamicEq;
-  $('#dynVolToggle').checked = d.dynamicVolume;
-  $('#subSlider').value = d.subLevel;
-  $('#centerSlider').value = d.centerLevel;
-  $('#subValue').textContent = `${d.subLevel} dB`;
-  $('#centerValue').textContent = `${d.centerLevel} dB`;
-
-  const progress = volumeToProgress(d.volume);
-  $('#dialProgress').style.strokeDasharray = `${progress} 999`;
-
+  const d=devices[current];
+  $('#subtitle').textContent=`${d.name} · ${d.room}`;
+  $('#powerText').textContent=d.power?'EIN':'AUS';
+  $('#powerBtn').classList.toggle('off',!d.power);
+  $('#sourceText').textContent=d.source;
+  $('#modeText').textContent=d.modeText;
+  $('#volumeBig').textContent=fmtDb(d.volume);
+  $('#footerDb').textContent=fmtDb(d.volume);
+  $('#footerVolume').value=d.volume;
+  $('#audysseyTitle').textContent=d.audysseyTitle;
+  $('#audysseyToggle').checked=d.audyssey;
+  $('#dynEqToggle').checked=d.dynEq;
+  $('#dynVolToggle').checked=d.dynVol;
+  $('#subSlider').value=d.sub;
+  $('#centerSlider').value=d.center;
+  $('#subValue').textContent=`${d.sub} dB`;
+  $('#centerValue').textContent=`${d.center} dB`;
+  $('#layoutCount').textContent=d.layout;
+  $('#mediaTitle').textContent=d.mediaTitle;
+  $('#mediaSub').textContent=d.mediaSub;
+  $('#mediaThumb').textContent=d.mediaThumb;
+  setRing(d.volume);
   renderSources(d);
   renderModes(d);
-  renderDeviceChips();
+  renderDeviceEntries();
 }
-
 function applyScene(scene){
-  const d = devices[currentDevice];
-  if(scene === 'film'){
-    d.source = d.id === 'marantz' ? 'Blu-ray' : 'Xbox';
-    d.activeMode = 'Dolby';
-    d.soundMode = 'Dolby Digital / 5.1';
-    d.dynamicEq = true;
-    d.dynamicVolume = false;
-    d.subLevel = 1;
-    d.centerLevel = 1;
-    d.activityTitle = 'Filmabend';
-    d.activitySub = 'Szene aktiviert';
+  const d=devices[current];
+  if(scene==='film'){
+    d.source=d.sources.some(x=>x.label==='Blu-ray')?'Blu-ray':d.source;
+    d.activeMode=d.modes.includes('Dolby')?'Dolby':d.activeMode;
+    d.modeText='Dolby Digital / 5.1';
+    d.dynEq=true; d.dynVol=false; d.sub=1; d.center=1;
+    d.mediaTitle='Filmabend'; d.mediaSub='Szene aktiv'; d.mediaThumb='🎬';
   }
-  if(scene === 'music'){
-    d.source = d.id === 'marantz' ? 'Media Player' : 'Music Server';
-    d.activeMode = d.modes.includes('Pure Direct') ? 'Pure Direct' : 'Music';
-    d.soundMode = d.activeMode;
-    d.dynamicEq = false;
-    d.dynamicVolume = false;
-    d.subLevel = -2;
-    d.centerLevel = 0;
-    d.activityTitle = 'Musik';
-    d.activitySub = 'Szene aktiviert';
+  if(scene==='music'){
+    d.source=d.sources.find(x=>/Music|Media/.test(x.label))?.label||d.source;
+    d.activeMode=d.modes.includes('Pure Direct')?'Pure Direct':(d.modes.includes('Music')?'Music':d.activeMode);
+    d.modeText=d.activeMode;
+    d.dynEq=false; d.dynVol=false; d.sub=-2; d.center=0;
+    d.mediaTitle='Musik'; d.mediaSub='Szene aktiv'; d.mediaThumb='♫';
   }
-  if(scene === 'gaming'){
-    d.source = 'Xbox';
-    d.activeMode = d.modes.includes('Dolby') ? 'Dolby' : d.modes[0];
-    d.soundMode = 'Dolby Digital / 5.1';
-    d.dynamicEq = true;
-    d.dynamicVolume = false;
-    d.subLevel = 0;
-    d.centerLevel = 0;
-    d.activityTitle = 'Gaming';
-    d.activitySub = 'Szene aktiviert';
+  if(scene==='gaming'){
+    d.source='Xbox';
+    d.activeMode=d.modes.includes('Dolby')?'Dolby':d.activeMode;
+    d.modeText='Dolby Digital / 5.1';
+    d.dynEq=true; d.dynVol=false; d.sub=0; d.center=0;
+    d.mediaTitle='Gaming'; d.mediaSub='Szene aktiv'; d.mediaThumb='🎮';
   }
-  if(scene === 'night'){
-    d.dynamicEq = true;
-    d.dynamicVolume = true;
-    d.volume = Math.min(d.volume, -45);
-    d.subLevel = -4;
-    d.activityTitle = 'Abends';
-    d.activitySub = 'Szene aktiviert';
+  if(scene==='night'){
+    d.dynEq=true; d.dynVol=true; d.volume=Math.min(d.volume,-45); d.sub=-4;
+    d.mediaTitle='Abends'; d.mediaSub='Szene aktiv'; d.mediaThumb='☾';
   }
   render();
-  toast(`Szene aktiviert: ${scene}`);
+  toast('Szene aktiviert');
 }
+function openDrawer(){ $('#deviceDrawer').classList.add('open'); }
+function closeDrawer(){ $('#deviceDrawer').classList.remove('open'); }
 
-function setupEvents(){
-  $$('.device-chip').forEach(btn => {
-    btn.addEventListener('click', () => {
-      currentDevice = btn.dataset.device;
-      render();
-      toast(`Gerät gewechselt: ${devices[currentDevice].name}`);
-    });
-  });
+$('#subtitle').addEventListener('click',openDrawer);
+$('#settingsBtn').addEventListener('click',openDrawer);
+$('#sceneBtn').addEventListener('click',()=>toast('Szenen sind bereits direkt verfügbar'));
+$$('[data-close]').forEach(el=>el.addEventListener('click',closeDrawer));
+$$('.device-entry').forEach(el=>el.addEventListener('click',()=>{
+  current=el.dataset.device; closeDrawer(); render(); toast(devices[current].name);
+}));
+$('#addDeviceBtn').addEventListener('click',()=>toast('Gerät hinzufügen kommt in V0.3'));
 
-  $$('#app .scene-card').forEach(btn => {
-    btn.addEventListener('click', () => applyScene(btn.dataset.scene));
-  });
+$('#powerBtn').addEventListener('click',()=>{
+  const d=devices[current]; d.power=!d.power; render(); toast(d.power?'Receiver EIN':'Receiver AUS');
+});
+$('#volUp').addEventListener('click',()=>{
+  const d=devices[current]; d.volume=Math.min(18,d.volume+.5); render();
+});
+$('#volDown').addEventListener('click',()=>{
+  const d=devices[current]; d.volume=Math.max(-80,d.volume-.5); render();
+});
+$('#footerVolume').addEventListener('input',e=>{
+  devices[current].volume=parseFloat(e.target.value); render();
+});
 
-  $('#volUpBtn').addEventListener('click', () => {
-    const d = devices[currentDevice];
-    d.volume = clamp(d.volume + 0.5, -80, 18);
-    render();
-  });
-  $('#volDownBtn').addEventListener('click', () => {
-    const d = devices[currentDevice];
-    d.volume = clamp(d.volume - 0.5, -80, 18);
-    render();
-  });
+$$('.scene-card').forEach(el=>el.addEventListener('click',()=>applyScene(el.dataset.scene)));
 
-  $('#footerVol').addEventListener('input', (e) => {
-    const d = devices[currentDevice];
-    d.volume = parseFloat(e.target.value);
-    render();
-  });
+$('#audysseyToggle').addEventListener('change',e=>{devices[current].audyssey=e.target.checked; toast(`Audyssey ${e.target.checked?'an':'aus'}`)});
+$('#dynEqToggle').addEventListener('change',e=>{devices[current].dynEq=e.target.checked; toast(`Dynamic EQ ${e.target.checked?'an':'aus'}`)});
+$('#dynVolToggle').addEventListener('change',e=>{devices[current].dynVol=e.target.checked; toast(`Dynamic Volume ${e.target.checked?'an':'aus'}`)});
+$('#subSlider').addEventListener('input',e=>{devices[current].sub=parseFloat(e.target.value); $('#subValue').textContent=`${devices[current].sub} dB`});
+$('#centerSlider').addEventListener('input',e=>{devices[current].center=parseFloat(e.target.value); $('#centerValue').textContent=`${devices[current].center} dB`});
 
-  $('#audysseyToggle').addEventListener('change', (e) => {
-    devices[currentDevice].audyssey = e.target.checked;
-    toast(`Audyssey ${e.target.checked ? 'aktiv' : 'aus'}`);
-  });
-  $('#dynEqToggle').addEventListener('change', (e) => {
-    devices[currentDevice].dynamicEq = e.target.checked;
-    toast(`Dynamic EQ ${e.target.checked ? 'aktiv' : 'aus'}`);
-  });
-  $('#dynVolToggle').addEventListener('change', (e) => {
-    devices[currentDevice].dynamicVolume = e.target.checked;
-    toast(`Dynamic Volume ${e.target.checked ? 'aktiv' : 'aus'}`);
-  });
+$('#transportPlay').addEventListener('click',e=>{
+  e.currentTarget.textContent=e.currentTarget.textContent==='Ⅱ'?'▶':'Ⅱ';
+  toast('Test-Player umgeschaltet');
+});
 
-  $('#subSlider').addEventListener('input', (e) => {
-    devices[currentDevice].subLevel = parseFloat(e.target.value);
-    $('#subValue').textContent = `${devices[currentDevice].subLevel} dB`;
-  });
-  $('#centerSlider').addEventListener('input', (e) => {
-    devices[currentDevice].centerLevel = parseFloat(e.target.value);
-    $('#centerValue').textContent = `${devices[currentDevice].centerLevel} dB`;
-  });
-
-  $('#playPauseBtn').addEventListener('click', (e) => {
-    e.currentTarget.textContent = e.currentTarget.textContent === '⏸' ? '▶' : '⏸';
-    toast('Test-Player umgeschaltet');
-  });
-
-  $('#settingsBtn').addEventListener('click', () => toast('Einstellungen folgen in V0.2'));
-  $('#sceneMenuBtn').addEventListener('click', () => toast('Szenen-Übersicht folgt in V0.2'));
-}
-
-setupEvents();
+renderTicks();
 render();
 
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js').catch(() => {});
-  });
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 }
