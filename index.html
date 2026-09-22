@@ -275,6 +275,72 @@
       </div>
     </div>
 
+
+    <div class="connection-modal" id="connectionModal">
+      <div class="connection-backdrop" data-conn-close></div>
+      <div class="connection-card">
+        <div class="connection-head">
+          <div>
+            <div class="drawer-kicker">NETZWERK</div>
+            <h3>Receiver verbinden</h3>
+            <p>Marantz NR1605 jetzt direkt als Testgerät einrichten.</p>
+          </div>
+          <button class="drawer-close" data-conn-close>×</button>
+        </div>
+
+        <div class="connection-device">
+          <div class="device-orb alt"></div>
+          <div>
+            <strong id="connDeviceName">Marantz NR1605</strong>
+            <span id="connDeviceInfo">Web Control · lokales Netzwerk</span>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <label class="field">
+            <span>IP-Adresse</span>
+            <input id="receiverIp" inputmode="decimal" autocomplete="off" placeholder="z. B. 192.168.2.40">
+          </label>
+          <label class="field">
+            <span>HTTP-Port</span>
+            <input id="receiverPort" inputmode="numeric" autocomplete="off" value="80">
+          </label>
+        </div>
+
+        <div class="hint-card">
+          <div class="hint-title">Am Marantz vorher einstellen</div>
+          <div class="hint-text">Netzwerk → IP Control → <strong>Always On</strong>. Die IP findest du unter Netzwerk → Information.</div>
+        </div>
+
+        <div class="connection-actions">
+          <button class="primary-action" id="saveConnectionBtn">Speichern</button>
+          <button class="secondary-action" id="openWebUiBtn">Webinterface öffnen</button>
+        </div>
+
+        <div class="connection-test glass-sub">
+          <div class="test-head">
+            <div>
+              <strong>Direktsteuerungs-Test</strong>
+              <span>Sendet lokale HTTP-Kommandos an den Receiver.</span>
+            </div>
+            <div class="test-badge" id="testBadge">Nicht getestet</div>
+          </div>
+
+          <div class="test-buttons">
+            <button id="testVolDown" class="test-btn">− Lautstärke</button>
+            <button id="testVolUp" class="test-btn">+ Lautstärke</button>
+            <button id="testPowerOn" class="test-btn">Power ON</button>
+            <button id="testStandby" class="test-btn danger-lite">Standby</button>
+          </div>
+
+          <button class="probe-btn" id="probeBtn">Verbindung technisch prüfen</button>
+          <div class="probe-result" id="probeResult">
+            Noch kein Test. Wenn der Browser lokale HTTP-Aufrufe blockiert, bleibt das Webinterface trotzdem separat nutzbar.
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="toast hidden" id="toast"></div>
   </div>
 
