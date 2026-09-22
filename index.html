@@ -8,10 +8,10 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Cinema Control">
   <title>Cinema Control</title>
-  <link rel="manifest" href="manifest.webmanifest?v=0.6.0">
-  <link rel="icon" href="icon.svg?v=0.6.0" type="image/svg+xml">
-  <link rel="apple-touch-icon" href="icon-192.png?v=0.6.0">
-  <link rel="stylesheet" href="styles.css?v=0.6.0">
+  <link rel="manifest" href="manifest.webmanifest?v=0.6.1">
+  <link rel="icon" href="icon.svg?v=0.6.1" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon-192.png?v=0.6.1">
+  <link rel="stylesheet" href="styles.css?v=0.6.1">
 </head>
 <body>
   <div class="ambient ambient-a"></div>
@@ -30,7 +30,7 @@
       <div class="top-actions">
         <div class="version-badge" id="versionBadge" title="Build 2026-09-22">
           <span class="version-dot"></span>
-          <span id="versionText">v0.6.0</span>
+          <span id="versionText">v0.6.1</span>
         </div>
         <button class="top-chip" id="sceneBtn">
           <svg viewBox="0 0 24 24"><path d="M4 5h16v14H4V5Zm2 2v10h12V7H6Zm2-5 2 3h2l-2-3H8Zm5 0 2 3h2l-2-3h-2Z"/></svg>
@@ -67,6 +67,13 @@
               <div class="info-value" id="modeText">Dolby Digital / 5.1</div>
             </div>
           </div>
+
+          <div class="hero-capabilities" aria-label="NR1605 Gerätefähigkeiten">
+            <div class="capability-pill"><span class="cap-led"></span><b>LAN</b><small>Control</small></div>
+            <div class="capability-pill"><b>API</b><small>0300</small></div>
+            <div class="capability-pill"><b>2</b><small>Zonen</small></div>
+            <div class="capability-pill"><b>Audyssey</b><small>MultEQ</small></div>
+          </div>
         </div>
 
         <div class="volume-zone">
@@ -77,9 +84,11 @@
               <g class="ring-ticks" id="ringTicks"></g>
             </svg>
             <div class="ring-center">
+              <div class="volume-overline">MASTER</div>
               <div class="volume-big" id="volumeBig">-38.5 dB</div>
               <div class="volume-caption">Lautstärke</div>
             </div>
+            <div class="volume-scale"><span>-80</span><span>0</span><span>+18</span></div>
           </div>
           <div class="volume-actions">
             <button class="round-control" id="volDown">−</button>
@@ -507,6 +516,6 @@
     <div class="toast hidden" id="toast"></div>
   </div>
 
-  <script src="app.js?v=0.6.0"></script>
+  <script src="app.js?v=0.6.1"></script>
 </body>
 </html>

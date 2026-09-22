@@ -1,4 +1,4 @@
-const APP_VERSION='0.6.0';
+const APP_VERSION='0.6.1';
 const APP_BUILD='2026-09-22';
 
 const $=s=>document.querySelector(s);

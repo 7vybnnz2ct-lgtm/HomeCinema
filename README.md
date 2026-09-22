@@ -1,8 +1,8 @@
-# Cinema Control v0.6.0
+# Cinema Control v0.6.1
 
 GitHub-Pages/iPad Build für den Marantz NR1605.
 
-## Neu in v0.6.0
+## Neu in v0.6.1
 
 - Quellenbelegung an den echten NR1605 angepasst: XBOX = umbenannter Blu-ray Eingang (`SIBD`).
 - Tone Control, Bass, Treble.
@@ -17,6 +17,10 @@ GitHub-Pages/iPad Build für den Marantz NR1605.
 
 ## Wichtig
 
-Die Web-App sendet die Befehle direkt im lokalen LAN an den Receiver. Wegen Browser-CORS kann die GitHub-Pages-Version Antworten des Receivers nicht zuverlässig lesen. Daher zeigt v0.6.0 keine erfundenen Live-Rückmeldungen an. Das bidirektionale TCP-Lesen über Port 23 wurde am NR1605 separat erfolgreich getestet und ist für eine spätere native iPad-Bridge vorgesehen.
+Die Web-App sendet die Befehle direkt im lokalen LAN an den Receiver. Wegen Browser-CORS kann die GitHub-Pages-Version Antworten des Receivers nicht zuverlässig lesen. Daher zeigt v0.6.1 keine erfundenen Live-Rückmeldungen an. Das bidirektionale TCP-Lesen über Port 23 wurde am NR1605 separat erfolgreich getestet und ist für eine spätere native iPad-Bridge vorgesehen.
 
 Receiver: Netzwerk -> IP Control -> Always On.
+
+
+## v0.6.1 Premium UI
+Kompletter visueller Premium-Skin ohne Änderung der verifizierten NR1605-Steuerlogik.

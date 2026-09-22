@@ -1,12 +1,12 @@
-const CACHE='cinema-control-v0.6.0';
+const CACHE='cinema-control-v0.6.1';
 const FILES=[
   './',
   './index.html',
-  './styles.css?v=0.6.0',
-  './app.js?v=0.6.0',
-  './manifest.webmanifest?v=0.6.0',
-  './icon.svg?v=0.6.0',
-  './icon-192.png?v=0.6.0'
+  './styles.css?v=0.6.1',
+  './app.js?v=0.6.1',
+  './manifest.webmanifest?v=0.6.1',
+  './icon.svg?v=0.6.1',
+  './icon-192.png?v=0.6.1'
 ];
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(FILES)));});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
