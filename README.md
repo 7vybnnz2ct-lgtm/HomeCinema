@@ -1,39 +1,50 @@
-# Cinema Control v0.3 — Marantz Test Build
+# Cinema Control v0.4 — Marantz Live Control
 
-Diese Version baut auf v0.2 auf und bereitet die echte Einbindung des Marantz NR1605 vor.
+Die App steuert den Marantz NR1605 jetzt aus der normalen Oberfläche heraus.
 
-## Neu
-- Receiver-IP und HTTP-Port speichern
-- Marantz-Webinterface direkt öffnen
-- Direktsteuerungs-Test für:
-  - Lautstärke +
-  - Lautstärke -
-  - Power ON
-  - Standby
-- technischer Verbindungstest
-- lokale Einstellungen werden nur im Browser/LocalStorage gespeichert
-- Denon AVR-X4000 und Marantz NR1605 bleiben als Geräteprofile enthalten
+## Jetzt echt am NR1605
+- Power ON / Standby
+- Lautstärke + / -
+- absolute Lautstärke über unteren Slider
+- Mute
+- Quellen:
+  - TV Audio
+  - Xbox / GAME
+  - Blu-ray
+  - Media Player
+- Klangmodi:
+  - Stereo
+  - Dolby Digital
+  - DTS Surround
+  - Direct
+  - Pure Direct
+  - Movie / Music, soweit im Marantz-Profil angeboten
+- Audyssey MultEQ ein/aus
+- Dynamic EQ ein/aus
+- Dynamic Volume (Light) ein/aus
+- Subwoofer-Kanalpegel
+- Center-Kanalpegel
+- Szenen senden mehrere Receiver-Kommandos nacheinander
 
-## Am Marantz NR1605
-1. Receiver mit demselben LAN/WLAN wie iPad verbinden.
-2. Netzwerk -> IP Control -> Always On.
-3. Netzwerk -> Information -> IP-Adresse notieren.
-4. In Safari testweise `http://IP-ADRESSE` öffnen.
-5. In Cinema Control -> Zahnrad -> IP-Adresse eintragen.
-6. `Webinterface öffnen` testen.
-7. Danach `+ Lautstärke` als ersten Direktsteuerungs-Test verwenden.
+## Noch bewusst nicht automatisch gelesen
+Die Oberfläche aktualisiert sich nach eigenen Befehlen sofort, liest aber den Zustand
+noch nicht zuverlässig zurück, wenn du parallel die Original-Fernbedienung benutzt.
+Die alten Receiver-Webendpunkte liefern den Status zwar als XML, aber ob Safari dessen
+Cross-Origin-Antwort lesen darf, muss separat geprüft werden.
 
-## Warum ein Testmodus?
-GitHub Pages läuft über HTTPS, der NR1605 stellt sein altes Webinterface über HTTP bereit.
-Moderne Browser schützen Zugriffe von öffentlichen HTTPS-Seiten auf lokale HTTP-Geräte.
-Aktuelle Safari/WebKit-Versionen entwickeln dafür Local Network Access, aber Verhalten und
-CORS-Unterstützung des Receivers müssen am echten Gerät getestet werden.
+## Apple TV
+Die App zeigt Apple TV als Quelle, sendet aber in v0.4 bewusst noch keinen Eingangsbefehl,
+weil nicht bekannt ist, an welchem HDMI-Eingang dein Apple TV angeschlossen ist.
+Das wird später konfigurierbar.
 
-## HTTP-Kommandos
-Der Build nutzt die bei älteren Denon/Marantz-Geräten üblichen iPhone-App-Endpunkte:
-- `/goform/formiPhoneAppDirect.xml?MVUP`
-- `/goform/formiPhoneAppDirect.xml?MVDOWN`
-- `/goform/formiPhoneAppPower.xml?1+PowerOn`
-- `/goform/formiPhoneAppPower.xml?1+PowerStandby`
+## Denon AVR-X4000
+Bleibt als Geräteprofil vorhanden. Solange keine separate Denon-IP hinterlegt ist,
+läuft dieses Profil bewusst im Demo-Modus.
 
-V0.3 liest bewusst noch keinen Live-Status ein. Das kommt nach dem ersten Test am NR1605.
+## Marantz verbinden
+- Netzwerk -> IP Control -> Always On
+- IP-Adresse notieren
+- Cinema Control -> Zahnrad
+- IP und Port 80 speichern
+
+Die App merkt sich die IP lokal im Browser.

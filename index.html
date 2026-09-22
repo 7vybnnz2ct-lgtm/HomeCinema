@@ -235,7 +235,8 @@
         </div>
 
         <div class="transport-right">
-          <span class="speaker-mini">🔊</span>
+          <button class="mute-btn" id="muteBtn" title="Stumm">🔊</button>
+          <span class="speaker-mini" id="speakerMini">🔊</span>
           <input id="footerVolume" type="range" min="-80" max="18" step=".5">
           <div class="footer-db" id="footerDb">-38.5 dB</div>
         </div>
@@ -315,6 +316,14 @@
         <div class="connection-actions">
           <button class="primary-action" id="saveConnectionBtn">Speichern</button>
           <button class="secondary-action" id="openWebUiBtn">Webinterface öffnen</button>
+        </div>
+
+        <div class="live-summary" id="liveSummary">
+          <span class="live-dot"></span>
+          <div>
+            <strong>Live-Steuerung</strong>
+            <span id="liveSummaryText">Noch keine IP-Adresse gespeichert.</span>
+          </div>
         </div>
 
         <div class="connection-test glass-sub">

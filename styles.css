@@ -278,3 +278,29 @@ svg{width:1em;height:1em;fill:currentColor}
   .test-buttons{grid-template-columns:1fr 1fr}
   .connection-actions{flex-direction:column}
 }
+
+/* v0.4 live-control polish */
+.mute-btn{
+  width:36px;height:36px;border-radius:50%;border:1px solid var(--line);
+  background:rgba(255,255,255,.04);color:white;display:grid;place-items:center;
+  font-size:14px
+}
+.mute-btn.active{
+  background:rgba(255,91,91,.12);border-color:rgba(255,91,91,.34);
+  color:#ffc2c2
+}
+.live-summary{
+  margin:14px 0 0;border:1px solid rgba(51,224,141,.18);
+  background:rgba(51,224,141,.065);border-radius:16px;padding:12px 13px;
+  display:grid;grid-template-columns:10px 1fr;gap:10px;align-items:center
+}
+.live-summary .live-dot{
+  width:9px;height:9px;border-radius:50%;background:#33e08d;
+  box-shadow:0 0 14px rgba(51,224,141,.65)
+}
+.live-summary strong{display:block;font-size:13px}
+.live-summary span:not(.live-dot){display:block;color:#aebbc7;font-size:11px;margin-top:3px}
+.status-pill.demo{border-color:rgba(255,194,90,.18);background:rgba(120,81,20,.18);color:#ffd99e}
+.status-pill.demo .status-dot{background:#ffbe55;box-shadow:0 0 12px rgba(255,190,85,.55)}
+.status-pill.live{border-color:rgba(51,224,141,.18);background:rgba(20,88,61,.26);color:#a4ffd1}
+.source-btn.pending,.mode-btn.pending{opacity:.65}

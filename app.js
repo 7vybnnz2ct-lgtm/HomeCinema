@@ -4,7 +4,7 @@ const devices = {
     id:'denon', name:'Denon AVR-X4000', room:'Wohnzimmer', power:true, volume:-38.5,
     source:'Xbox', modeText:'Dolby Digital / 5.1', activeMode:'Dolby', layout:'7.1',
     audysseyTitle:'Audyssey XT32', audyssey:true, dynEq:true, dynVol:false, sub:-2, center:0,
-    mediaTitle:'Xbox Series X', mediaSub:'Wiedergabe aktiv', mediaThumb:'🎮',
+    mediaTitle:'Xbox Series X', mediaSub:'Wiedergabe aktiv', mediaThumb:'🎮', muted:false,
     sources:[
       {label:'Xbox',icon:'🎮'},
       {label:'Apple TV',icon:'▣'},
@@ -18,19 +18,128 @@ const devices = {
     id:'marantz', name:'Marantz NR1605', room:'Wohnzimmer', power:true, volume:-42,
     source:'TV', modeText:'DTS-HD / 5.1', activeMode:'DTS', layout:'5.1 / 7.1',
     audysseyTitle:'Audyssey MultEQ', audyssey:true, dynEq:true, dynVol:true, sub:0, center:1,
-    mediaTitle:'Fernsehen', mediaSub:'TV-Ton aktiv', mediaThumb:'▭',
+    mediaTitle:'Fernsehen', mediaSub:'TV-Ton aktiv', mediaThumb:'▭', muted:false,
     sources:[
-      {label:'TV',icon:'▭'},
-      {label:'Apple TV',icon:'▣'},
-      {label:'Xbox',icon:'🎮'},
-      {label:'Blu-ray',icon:'◉'},
-      {label:'Media Player',icon:'▤'}
+      {label:'TV',icon:'▭',command:'SITV'},
+      {label:'Apple TV',icon:'▣',command:null},
+      {label:'Xbox',icon:'🎮',command:'SIGAME'},
+      {label:'Blu-ray',icon:'◉',command:'SIBD'},
+      {label:'Media Player',icon:'▤',command:'SIMPLAY'}
     ],
     modes:['Stereo','Dolby','DTS','Movie','Music']
   }
 };
 
 let current = 'denon';
+
+const legacyIp = localStorage.getItem('cinema-receiver-ip') || '';
+const receiverConfig = {
+  marantz: {
+    ip: localStorage.getItem('cinema-marantz-ip') || legacyIp,
+    port: localStorage.getItem('cinema-marantz-port') || localStorage.getItem('cinema-receiver-port') || '80'
+  },
+  denon: {
+    ip: localStorage.getItem('cinema-denon-ip') || '',
+    port: localStorage.getItem('cinema-denon-port') || '80'
+  }
+};
+
+function isLiveDevice(){
+  return current === 'marantz' && !!receiverConfig.marantz.ip;
+}
+
+function currentReceiverBase(){
+  const cfg = receiverConfig[current];
+  if(!cfg || !cfg.ip) return null;
+  return `http://${cfg.ip}${cfg.port && cfg.port !== '80' ? ':'+cfg.port : ''}`;
+}
+
+function commandUrl(command){
+  const base = currentReceiverBase();
+  if(!base) return null;
+  return `${base}/goform/formiPhoneAppDirect.xml?${encodeURIComponent(command).replace(/%2F/g,'%2F')}`;
+}
+
+async function sendReceiverCommand(command, label='', quiet=false){
+  if(current !== 'marantz'){
+    if(!quiet) toast('Denon läuft noch im Demo-Modus');
+    return false;
+  }
+  const url = commandUrl(command);
+  if(!url){
+    if(!quiet) toast('Marantz-IP fehlt');
+    openConnectionModal();
+    return false;
+  }
+
+  try{
+    const controller = new AbortController();
+    const timer = setTimeout(()=>controller.abort(), 3200);
+    const options = {method:'GET',mode:'no-cors',cache:'no-store',signal:controller.signal};
+    try{
+      const req = new Request(url,{...options,targetAddressSpace:'local'});
+      await fetch(req);
+    }catch(inner){
+      await fetch(url,options);
+    }
+    clearTimeout(timer);
+    if(!quiet && label) toast(label);
+    return true;
+  }catch(err){
+    if(!quiet) toast('Receiver nicht erreichbar');
+    return false;
+  }
+}
+
+async function sendReceiverSequence(commands, label='Szene aktiviert'){
+  if(current !== 'marantz'){
+    toast('Szene im Demo-Modus');
+    return false;
+  }
+  for(const cmd of commands){
+    const ok = await sendReceiverCommand(cmd,'',true);
+    if(!ok){
+      toast('Szene konnte nicht vollständig gesendet werden');
+      return false;
+    }
+    await new Promise(r=>setTimeout(r,180));
+  }
+  toast(label);
+  return true;
+}
+
+function dbToMvCommand(db){
+  const value = Math.max(-79.5,Math.min(18,Number(db)));
+  const protocol = 80 + value;
+  if(Number.isInteger(protocol)){
+    return 'MV' + String(Math.round(protocol)).padStart(2,'0');
+  }
+  const whole = Math.floor(protocol);
+  return 'MV' + String(whole).padStart(2,'0') + '5';
+}
+
+function dbToChannelCommand(prefix, db){
+  const value = Math.max(-12,Math.min(12,Number(db)));
+  const protocol = 50 + value;
+  if(Number.isInteger(protocol)){
+    return prefix + ' ' + String(Math.round(protocol));
+  }
+  const whole = Math.floor(protocol);
+  return prefix + ' ' + String(whole) + '5';
+}
+
+function setLiveBadge(){
+  const pill = document.querySelector('.status-pill');
+  if(isLiveDevice()){
+    $('#statusText').textContent='LIVE';
+    pill?.classList.add('live');
+    pill?.classList.remove('demo');
+  }else{
+    $('#statusText').textContent='Demo';
+    pill?.classList.add('demo');
+    pill?.classList.remove('live');
+  }
+}
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 
@@ -75,31 +184,58 @@ function renderSources(d){
     b.className='source-btn'+(src.label===d.source?' active':'');
     b.innerHTML=`<div class="source-icon">${src.icon}</div><div class="source-label"></div>`;
     b.querySelector('.source-label').textContent=src.label;
-    b.onclick=()=>{
+    b.onclick=async ()=>{
+      if(current==='marantz'){
+        if(!src.command){
+          toast(`${src.label}: Eingang noch nicht zugeordnet`);
+          return;
+        }
+        b.classList.add('pending');
+        const ok=await sendReceiverCommand(src.command,`Quelle: ${src.label}`);
+        b.classList.remove('pending');
+        if(!ok) return;
+      }
       d.source=src.label;
       d.mediaTitle=src.label;
-      d.mediaSub='Quelle aktiv';
+      d.mediaSub=current==='marantz'?'Receiver-Quelle aktiv':'Quelle aktiv';
       if(src.label==='Xbox') d.mediaThumb='🎮';
       else if(src.label==='Blu-ray') d.mediaThumb='◉';
       else d.mediaThumb='▭';
       render();
-      toast(`Quelle: ${src.label}`);
     };
     host.appendChild(b);
   });
 }
 function renderModes(d){
   const host=$('#modeGrid'); host.innerHTML='';
+  const modeCommands={
+    'Stereo':'MSSTEREO',
+    'Dolby':'MSDOLBY DIGITAL',
+    'DTS':'MSDTS SURROUND',
+    'Direct':'MSDIRECT',
+    'Pure Direct':'MSPURE DIRECT',
+    'Movie':'MSMOVIE',
+    'Music':'MSMUSIC'
+  };
   d.modes.forEach(m=>{
     const b=document.createElement('button');
     b.className='mode-btn'+(m===d.activeMode?' active':'');
     b.textContent=m;
-    b.onclick=()=>{
+    b.onclick=async ()=>{
+      if(current==='marantz'){
+        const cmd=modeCommands[m];
+        if(cmd){
+          b.classList.add('pending');
+          const ok=await sendReceiverCommand(cmd,`Klangmodus: ${m}`);
+          b.classList.remove('pending');
+          if(!ok) return;
+        }
+      }
       d.activeMode=m;
       if(m==='Dolby') d.modeText='Dolby Digital / 5.1';
-      else if(m==='DTS') d.modeText='DTS-HD / 5.1';
+      else if(m==='DTS') d.modeText='DTS / 5.1';
       else d.modeText=m;
-      render(); toast(`Klangmodus: ${m}`);
+      render();
     };
     host.appendChild(b);
   });
@@ -131,19 +267,26 @@ function render(){
   $('#mediaTitle').textContent=d.mediaTitle;
   $('#mediaSub').textContent=d.mediaSub;
   $('#mediaThumb').textContent=d.mediaThumb;
+  $('#muteBtn').classList.toggle('active',d.muted);
+  $('#muteBtn').textContent=d.muted?'🔇':'🔊';
+  $('#speakerMini').textContent=d.muted?'🔇':'🔊';
   setRing(d.volume);
+  setLiveBadge();
   renderSources(d);
   renderModes(d);
   renderDeviceEntries();
 }
-function applyScene(scene){
+async function applyScene(scene){
   const d=devices[current];
+  let commands=[];
+
   if(scene==='film'){
     d.source=d.sources.some(x=>x.label==='Blu-ray')?'Blu-ray':d.source;
     d.activeMode=d.modes.includes('Dolby')?'Dolby':d.activeMode;
     d.modeText='Dolby Digital / 5.1';
     d.dynEq=true; d.dynVol=false; d.sub=1; d.center=1;
     d.mediaTitle='Filmabend'; d.mediaSub='Szene aktiv'; d.mediaThumb='🎬';
+    commands=['SIBD','MSMOVIE','PSDYNEQ ON','PSDYNVOL OFF',dbToMvCommand(d.volume)];
   }
   if(scene==='music'){
     d.source=d.sources.find(x=>/Music|Media/.test(x.label))?.label||d.source;
@@ -151,6 +294,7 @@ function applyScene(scene){
     d.modeText=d.activeMode;
     d.dynEq=false; d.dynVol=false; d.sub=-2; d.center=0;
     d.mediaTitle='Musik'; d.mediaSub='Szene aktiv'; d.mediaThumb='♫';
+    commands=['SIMPLAY',d.activeMode==='Pure Direct'?'MSPURE DIRECT':'MSMUSIC','PSDYNVOL OFF'];
   }
   if(scene==='gaming'){
     d.source='Xbox';
@@ -158,13 +302,17 @@ function applyScene(scene){
     d.modeText='Dolby Digital / 5.1';
     d.dynEq=true; d.dynVol=false; d.sub=0; d.center=0;
     d.mediaTitle='Gaming'; d.mediaSub='Szene aktiv'; d.mediaThumb='🎮';
+    commands=['SIGAME','MSGAME','PSDYNEQ ON','PSDYNVOL OFF'];
   }
   if(scene==='night'){
     d.dynEq=true; d.dynVol=true; d.volume=Math.min(d.volume,-45); d.sub=-4;
     d.mediaTitle='Abends'; d.mediaSub='Szene aktiv'; d.mediaThumb='☾';
+    commands=['PSDYNEQ ON','PSDYNVOL LIT',dbToMvCommand(d.volume)];
   }
+
   render();
-  toast('Szene aktiviert');
+  if(current==='marantz') await sendReceiverSequence(commands);
+  else toast('Szene aktiviert (Demo)');
 }
 function openDrawer(){ $('#deviceDrawer').classList.add('open'); }
 function closeDrawer(){ $('#deviceDrawer').classList.remove('open'); }
@@ -176,28 +324,102 @@ $$('[data-close]').forEach(el=>el.addEventListener('click',closeDrawer));
 $$('.device-entry').forEach(el=>el.addEventListener('click',()=>{
   current=el.dataset.device; closeDrawer(); render(); toast(devices[current].name);
 }));
-$('#addDeviceBtn').addEventListener('click',()=>toast('Gerät hinzufügen kommt in V0.3'));
+$('#addDeviceBtn').addEventListener('click',()=>toast('Weitere Geräteprofile folgen'));
 
-$('#powerBtn').addEventListener('click',()=>{
-  const d=devices[current]; d.power=!d.power; render(); toast(d.power?'Receiver EIN':'Receiver AUS');
+$('#powerBtn').addEventListener('click',async ()=>{
+  const d=devices[current];
+  const next=!d.power;
+  if(current==='marantz'){
+    const ok=await sendReceiverCommand(next?'PWON':'PWSTANDBY',next?'Receiver EIN':'Receiver Standby');
+    if(!ok) return;
+    if(next) await new Promise(r=>setTimeout(r,1000));
+  }
+  d.power=next;
+  render();
+  if(current!=='marantz') toast(d.power?'Receiver EIN (Demo)':'Receiver AUS (Demo)');
 });
-$('#volUp').addEventListener('click',()=>{
-  const d=devices[current]; d.volume=Math.min(18,d.volume+.5); render();
+$('#volUp').addEventListener('click',async ()=>{
+  const d=devices[current];
+  if(current==='marantz'){
+    const ok=await sendReceiverCommand('MVUP','',true);
+    if(!ok){ toast('Lautstärke nicht gesendet'); return; }
+  }
+  d.volume=Math.min(18,d.volume+.5); render();
 });
-$('#volDown').addEventListener('click',()=>{
-  const d=devices[current]; d.volume=Math.max(-80,d.volume-.5); render();
+$('#volDown').addEventListener('click',async ()=>{
+  const d=devices[current];
+  if(current==='marantz'){
+    const ok=await sendReceiverCommand('MVDOWN','',true);
+    if(!ok){ toast('Lautstärke nicht gesendet'); return; }
+  }
+  d.volume=Math.max(-80,d.volume-.5); render();
 });
 $('#footerVolume').addEventListener('input',e=>{
   devices[current].volume=parseFloat(e.target.value); render();
 });
+$('#footerVolume').addEventListener('change',async e=>{
+  const d=devices[current];
+  d.volume=parseFloat(e.target.value);
+  if(current==='marantz'){
+    await sendReceiverCommand(dbToMvCommand(d.volume),`Lautstärke ${fmtDb(d.volume)}`);
+  }
+});
 
 $$('.scene-card').forEach(el=>el.addEventListener('click',()=>applyScene(el.dataset.scene)));
 
-$('#audysseyToggle').addEventListener('change',e=>{devices[current].audyssey=e.target.checked; toast(`Audyssey ${e.target.checked?'an':'aus'}`)});
-$('#dynEqToggle').addEventListener('change',e=>{devices[current].dynEq=e.target.checked; toast(`Dynamic EQ ${e.target.checked?'an':'aus'}`)});
-$('#dynVolToggle').addEventListener('change',e=>{devices[current].dynVol=e.target.checked; toast(`Dynamic Volume ${e.target.checked?'an':'aus'}`)});
-$('#subSlider').addEventListener('input',e=>{devices[current].sub=parseFloat(e.target.value); $('#subValue').textContent=`${devices[current].sub} dB`});
-$('#centerSlider').addEventListener('input',e=>{devices[current].center=parseFloat(e.target.value); $('#centerValue').textContent=`${devices[current].center} dB`});
+$('#audysseyToggle').addEventListener('change',async e=>{
+  const next=e.target.checked;
+  if(current==='marantz'){
+    const ok=await sendReceiverCommand(next?'PSMULTEQ:AUDYSSEY':'PSMULTEQ:OFF',`Audyssey ${next?'an':'aus'}`);
+    if(!ok){ e.target.checked=!next; return; }
+  }
+  devices[current].audyssey=next;
+  if(current!=='marantz') toast(`Audyssey ${next?'an':'aus'} (Demo)`);
+});
+$('#dynEqToggle').addEventListener('change',async e=>{
+  const next=e.target.checked;
+  if(current==='marantz'){
+    const ok=await sendReceiverCommand(next?'PSDYNEQ ON':'PSDYNEQ OFF',`Dynamic EQ ${next?'an':'aus'}`);
+    if(!ok){ e.target.checked=!next; return; }
+  }
+  devices[current].dynEq=next;
+  if(current!=='marantz') toast(`Dynamic EQ ${next?'an':'aus'} (Demo)`);
+});
+$('#dynVolToggle').addEventListener('change',async e=>{
+  const next=e.target.checked;
+  if(current==='marantz'){
+    const ok=await sendReceiverCommand(next?'PSDYNVOL LIT':'PSDYNVOL OFF',`Dynamic Volume ${next?'an (Light)':'aus'}`);
+    if(!ok){ e.target.checked=!next; return; }
+  }
+  devices[current].dynVol=next;
+  if(current!=='marantz') toast(`Dynamic Volume ${next?'an':'aus'} (Demo)`);
+});
+$('#subSlider').addEventListener('input',e=>{
+  devices[current].sub=parseFloat(e.target.value);
+  $('#subValue').textContent=`${devices[current].sub} dB`;
+});
+$('#subSlider').addEventListener('change',async e=>{
+  if(current==='marantz') await sendReceiverCommand(dbToChannelCommand('CVSW',parseFloat(e.target.value)),`Subwoofer ${e.target.value} dB`);
+});
+$('#centerSlider').addEventListener('input',e=>{
+  devices[current].center=parseFloat(e.target.value);
+  $('#centerValue').textContent=`${devices[current].center} dB`;
+});
+$('#centerSlider').addEventListener('change',async e=>{
+  if(current==='marantz') await sendReceiverCommand(dbToChannelCommand('CVC',parseFloat(e.target.value)),`Center ${e.target.value} dB`);
+});
+
+$('#muteBtn').addEventListener('click',async ()=>{
+  const d=devices[current];
+  const next=!d.muted;
+  if(current==='marantz'){
+    const ok=await sendReceiverCommand(next?'MUON':'MUOFF',next?'Stumm':'Ton an');
+    if(!ok) return;
+  }
+  d.muted=next;
+  render();
+  if(current!=='marantz') toast(next?'Stumm (Demo)':'Ton an (Demo)');
+});
 
 $('#transportPlay').addEventListener('click',e=>{
   e.currentTarget.textContent=e.currentTarget.textContent==='Ⅱ'?'▶':'Ⅱ';
@@ -214,8 +436,10 @@ if('serviceWorker' in navigator){
 
 // ---- v0.3: real Marantz connection preparation ----
 const conn = {
-  ip: localStorage.getItem('cinema-receiver-ip') || '',
-  port: localStorage.getItem('cinema-receiver-port') || '80'
+  get ip(){ return receiverConfig[current]?.ip || ''; },
+  set ip(v){ if(receiverConfig[current]) receiverConfig[current].ip=v; },
+  get port(){ return receiverConfig[current]?.port || '80'; },
+  set port(v){ if(receiverConfig[current]) receiverConfig[current].port=v; }
 };
 
 function openConnectionModal(){
@@ -224,6 +448,9 @@ function openConnectionModal(){
   $('#connDeviceInfo').textContent = `${d.room} · Web Control / Netzwerk`;
   $('#receiverIp').value = conn.ip;
   $('#receiverPort').value = conn.port || '80';
+  $('#liveSummaryText').textContent = conn.ip
+    ? `${d.name} wird direkt über ${conn.ip}:${conn.port || '80'} gesteuert.`
+    : 'Noch keine IP-Adresse gespeichert.';
   $('#connectionModal').classList.add('open');
 }
 
@@ -246,9 +473,14 @@ function saveConnection(){
   }
   conn.ip = ip;
   conn.port = port || '80';
-  localStorage.setItem('cinema-receiver-ip', conn.ip);
-  localStorage.setItem('cinema-receiver-port', conn.port);
-  $('#statusText').textContent = 'IP gespeichert';
+  localStorage.setItem(`cinema-${current}-ip`, conn.ip);
+  localStorage.setItem(`cinema-${current}-port`, conn.port);
+  if(current==='marantz'){
+    localStorage.setItem('cinema-receiver-ip', conn.ip); // v0.3 migration compatibility
+    localStorage.setItem('cinema-receiver-port', conn.port);
+  }
+  $('#liveSummaryText').textContent = `${devices[current].name} wird direkt über ${conn.ip}:${conn.port} gesteuert.`;
+  setLiveBadge();
   toast(`Receiver gespeichert: ${conn.ip}`);
   return true;
 }
