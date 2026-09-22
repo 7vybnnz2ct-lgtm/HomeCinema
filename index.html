@@ -8,10 +8,10 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Cinema Control">
   <title>Cinema Control</title>
-  <link rel="manifest" href="manifest.webmanifest">
-  <link rel="icon" href="icon.svg" type="image/svg+xml">
-  <link rel="apple-touch-icon" href="icon-192.png">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="manifest" href="manifest.webmanifest?v=0.4.2">
+  <link rel="icon" href="icon.svg?v=0.4.2" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon-192.png?v=0.4.2">
+  <link rel="stylesheet" href="styles.css?v=0.4.2">
 </head>
 <body>
   <div class="ambient ambient-a"></div>
@@ -28,6 +28,10 @@
       </div>
 
       <div class="top-actions">
+        <div class="version-badge" id="versionBadge" title="Build 2026-09-22">
+          <span class="version-dot"></span>
+          <span id="versionText">v0.4.2</span>
+        </div>
         <button class="top-icon" aria-label="Suche">
           <svg viewBox="0 0 24 24"><path d="M10.8 4.6a6.2 6.2 0 1 0 0 12.4 6.2 6.2 0 0 0 0-12.4Zm0-2a8.2 8.2 0 1 1 0 16.4 8.2 8.2 0 0 1 0-16.4Zm6.2 13.7 4.3 4.3-1.4 1.4-4.3-4.3 1.4-1.4Z"/></svg>
         </button>
@@ -342,9 +346,9 @@
             <button id="testStandby" class="test-btn danger-lite">Standby</button>
           </div>
 
-          <button class="probe-btn" id="probeBtn">Verbindung technisch prüfen</button>
+          <button class="probe-btn" id="probeBtn">Verbindungsinfo</button>
           <div class="probe-result" id="probeResult">
-            Noch kein Test. Wenn der Browser lokale HTTP-Aufrufe blockiert, bleibt das Webinterface trotzdem separat nutzbar.
+            Direkte Steuerbefehle werden absichtlich ohne lesbare HTTP-Antwort gesendet. Status 0 im HAR ist dabei technisch normal.
           </div>
         </div>
       </div>
@@ -353,6 +357,6 @@
     <div class="toast hidden" id="toast"></div>
   </div>
 
-  <script src="app.js"></script>
+  <script src="app.js?v=0.4.2"></script>
 </body>
 </html>

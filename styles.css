@@ -304,3 +304,32 @@ svg{width:1em;height:1em;fill:currentColor}
 .status-pill.demo .status-dot{background:#ffbe55;box-shadow:0 0 12px rgba(255,190,85,.55)}
 .status-pill.live{border-color:rgba(51,224,141,.18);background:rgba(20,88,61,.26);color:#a4ffd1}
 .source-btn.pending,.mode-btn.pending{opacity:.65}
+
+/* v0.4.1 visible build/version marker */
+.version-badge{
+  height:48px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:0 13px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.035);
+  color:#aeb9c7;
+  font-size:12px;
+  font-weight:800;
+  letter-spacing:.2px;
+  backdrop-filter:blur(18px);
+  box-shadow:0 10px 24px rgba(0,0,0,.18);
+}
+.version-dot{
+  width:7px;height:7px;border-radius:50%;
+  background:#4da6ff;
+  box-shadow:0 0 10px rgba(77,166,255,.65);
+}
+@media(max-width:620px){
+  .version-badge{height:42px;padding:0 10px;font-size:11px}
+}
+
+/* v0.4.2 diagnostic cleanup */
+.probe-result strong{color:#dce8f4}

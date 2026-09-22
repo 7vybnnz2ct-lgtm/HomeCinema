@@ -1,50 +1,29 @@
-# Cinema Control v0.4 — Marantz Live Control
+# Cinema Control v0.4.2
 
-Die App steuert den Marantz NR1605 jetzt aus der normalen Oberfläche heraus.
+Diagnose-/Bereinigungsbuild auf Basis von v0.4.1.
 
-## Jetzt echt am NR1605
-- Power ON / Standby
-- Lautstärke + / -
-- absolute Lautstärke über unteren Slider
-- Mute
-- Quellen:
-  - TV Audio
-  - Xbox / GAME
-  - Blu-ray
-  - Media Player
-- Klangmodi:
-  - Stereo
-  - Dolby Digital
-  - DTS Surround
-  - Direct
-  - Pure Direct
-  - Movie / Music, soweit im Marantz-Profil angeboten
-- Audyssey MultEQ ein/aus
-- Dynamic EQ ein/aus
-- Dynamic Volume (Light) ein/aus
-- Subwoofer-Kanalpegel
-- Center-Kanalpegel
-- Szenen senden mehrere Receiver-Kommandos nacheinander
+## HAR-Auswertung
+Die GitHub-Pages-Dateien selbst wurden sauber mit HTTP 200 geladen.
 
-## Noch bewusst nicht automatisch gelesen
-Die Oberfläche aktualisiert sich nach eigenen Befehlen sofort, liest aber den Zustand
-noch nicht zuverlässig zurück, wenn du parallel die Original-Fernbedienung benutzt.
-Die alten Receiver-Webendpunkte liefern den Status zwar als XML, aber ob Safari dessen
-Cross-Origin-Antwort lesen darf, muss separat geprüft werden.
+Die auffälligen `Status 0`-Einträge entstanden bei lokalen Requests an den Marantz.
+Die App nutzt für direkte Receiver-Kommandos `fetch(..., mode: "no-cors")`.
+Solche Antworten sind für JavaScript absichtlich *opaque*: Status, Header und Body
+sind nicht lesbar. Browser stellen den Status deshalb als `0` dar, auch wenn der
+Receiver den Befehl tatsächlich ausführt.
 
-## Apple TV
-Die App zeigt Apple TV als Quelle, sendet aber in v0.4 bewusst noch keinen Eingangsbefehl,
-weil nicht bekannt ist, an welchem HDMI-Eingang dein Apple TV angeschlossen ist.
-Das wird später konfigurierbar.
+## Änderung in v0.4.2
+- sichtbare Versionsnummer bleibt erhalten
+- alte Mehrfach-Probes gegen
+  - MainZoneXmlStatus.xml
+  - MainZoneXmlStatusLite.xml
+  - Receiver-Root
+  wurden entfernt
+- „Verbindungsinfo“ erzeugt jetzt keinen Netzwerkverkehr
+- Funktionstest erfolgt nur noch bewusst über die vorhandenen Lautstärke-/Power-Tasten
+- Texte unterscheiden nun zwischen „Befehl ausgelöst“ und „Antwort bestätigt“
+- Cache-Busting auf v0.4.2
 
-## Denon AVR-X4000
-Bleibt als Geräteprofil vorhanden. Solange keine separate Denon-IP hinterlegt ist,
-läuft dieses Profil bewusst im Demo-Modus.
-
-## Marantz verbinden
-- Netzwerk -> IP Control -> Always On
-- IP-Adresse notieren
-- Cinema Control -> Zahnrad
-- IP und Port 80 speichern
-
-Die App merkt sich die IP lokal im Browser.
+## Wichtig
+Bei echten no-cors-Kommandos kann ein HAR weiterhin `Status 0` anzeigen.
+Das ist bei diesem Direktsteuerungsmodell technisch normal und kein belastbarer
+Hinweis darauf, dass der Befehl fehlgeschlagen ist.

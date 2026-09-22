@@ -1,3 +1,6 @@
+const APP_VERSION = '0.4.2';
+const APP_BUILD = '2026-09-22';
+
 
 const devices = {
   denon: {
@@ -528,9 +531,9 @@ async function sendNoCors(path, label){
       await fetch(url, options);
     }
     clearTimeout(timer);
-    $('#testBadge').textContent = 'Befehl gesendet';
+    $('#testBadge').textContent = 'Befehl ausgelöst';
     $('#testBadge').className = 'test-badge ok';
-    $('#probeResult').textContent = `${label}: Der Browser hat den lokalen HTTP-Request abgesendet. Prüfe am Receiver, ob die Aktion ausgeführt wurde.`;
+    $('#probeResult').textContent = `${label}: Der Steuerbefehl wurde ausgelöst. Bei no-cors kann der Browser die Antwort nicht lesen; maßgeblich ist, ob der Receiver reagiert.`;
     toast(label);
   }catch(err){
     $('#testBadge').textContent = 'Browser blockiert';
@@ -549,64 +552,16 @@ $('#testPowerOn').addEventListener('click', () =>
 $('#testStandby').addEventListener('click', () =>
   sendNoCors('/goform/formiPhoneAppPower.xml?1+PowerStandby', 'Standby gesendet'));
 
-$('#probeBtn').addEventListener('click', async () => {
-  if(!saveConnection()) return;
+$('#probeBtn').addEventListener('click', () => {
   const base = receiverBase();
-  const candidates = [
-    base + '/goform/formMainZone_MainZoneXmlStatus.xml',
-    base + '/goform/formMainZone_MainZoneXmlStatusLite.xml',
-    base + '/'
-  ];
-
-  $('#testBadge').textContent = 'Prüfe …';
-  $('#testBadge').className = 'test-badge warn';
-  $('#probeResult').textContent = 'Teste lokalen HTTP-Zugriff …';
-
-  for(const url of candidates){
-    try{
-      const controller = new AbortController();
-      const timer=setTimeout(()=>controller.abort(),2500);
-      let ok=false;
-
-      try{
-        const req = new Request(url, {
-          method:'GET',
-          mode:'cors',
-          cache:'no-store',
-          signal:controller.signal,
-          targetAddressSpace:'local'
-        });
-        const res = await fetch(req);
-        ok = !!res;
-      }catch(e){
-        // no-cors fallback can tell us that request dispatch is permitted,
-        // even though the response is intentionally opaque.
-        try{
-          const res = await fetch(url,{
-            method:'GET',
-            mode:'no-cors',
-            cache:'no-store',
-            signal:controller.signal
-          });
-          ok = !!res;
-        }catch(e2){}
-      }
-      clearTimeout(timer);
-
-      if(ok){
-        $('#testBadge').textContent = 'LAN erreichbar';
-        $('#testBadge').className = 'test-badge ok';
-        $('#probeResult').textContent =
-          'Der Browser konnte einen lokalen Request starten. Teste jetzt „+ Lautstärke“. Wenn der Marantz reagiert, können wir die echte Steuerung direkt in die App integrieren.';
-        return;
-      }
-    }catch(e){}
+  if(!base){
+    toast('Bitte zuerst IP-Adresse speichern');
+    return;
   }
-
-  $('#testBadge').textContent = 'Nicht direkt erreichbar';
-  $('#testBadge').className = 'test-badge bad';
+  $('#testBadge').textContent = 'Direktmodus';
+  $('#testBadge').className = 'test-badge ok';
   $('#probeResult').textContent =
-    'Die GitHub-Pages-App konnte den lokalen HTTP-Endpunkt nicht direkt erreichen. Das Marantz-Webinterface kann trotzdem funktionieren, wenn du es separat öffnest.';
+    'Die App sendet Steuerbefehle im no-cors-Direktmodus. Safari gibt die Marantz-Antwort dabei absichtlich nicht an JavaScript frei; deshalb kann ein HAR für diese Requests Status 0 zeigen. Das ist kein Fehler, wenn der Receiver reagiert. Für einen Funktionstest bitte „+ Lautstärke“ oder „− Lautstärke“ verwenden.';
 });
 
 // Open connection setup directly when user selects the Marantz and no IP is stored.
@@ -617,3 +572,12 @@ $$('.device-entry').forEach(el=>{
     }
   });
 });
+
+// ---- build marker ----
+(function(){
+  const badge = document.getElementById('versionText');
+  if (badge) badge.textContent = 'v' + APP_VERSION;
+  const wrap = document.getElementById('versionBadge');
+  if (wrap) wrap.title = `Cinema Control ${APP_VERSION} · Build ${APP_BUILD}`;
+  document.documentElement.dataset.appVersion = APP_VERSION;
+})();
